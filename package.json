@@ -1,0 +1,21 @@
+{
+  "name": "route-bastion",
+  "version": "0.0.1",
+  "description": "RouteBastion Monorepo",
+  "author": {
+    "name": "Pietro Piva Vieira",
+    "email": "pietro.developer@gmail.com",
+    "url": "https://github.com/pietro-swe"
+  },
+  "private": true,
+  "license": "MIT",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "pnpm -r dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint"
+  }
+}

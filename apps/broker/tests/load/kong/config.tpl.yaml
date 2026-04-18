@@ -1,0 +1,48 @@
+_format_version: "3.0"
+_transform: true
+
+services:
+  - name: Broker
+    host: brokers
+    port: 8090
+    protocol: http
+    path: "/"
+    connect_timeout: 10000
+    retries: 3
+    routes:
+      - name: "Broker-API"
+        protocols:
+          - http
+          - https
+        paths:
+          - "/health"
+          - "/v1/optimizations"
+          - "/v1/back-office/customers"
+          - "/v1/back-office/providers"
+        strip_path: false
+
+upstreams:
+  - name: brokers
+    slots: 10
+    algorithm: round-robin
+    targets:
+${KONG_TARGETS}
+
+plugins:
+  - name: cors
+    enabled: true
+    config:
+      origins:
+        - "*"
+      methods:
+        - GET
+        - POST
+        - PUT
+        - PATCH
+        - DELETE
+        - OPTIONS
+        - HEAD
+      headers:
+        - Accept
+        - Content-Type
+        - X-RouteBastion-API-Key

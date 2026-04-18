@@ -1,0 +1,20 @@
+{
+  "recommendations": [
+    "vadimcn.vscode-lldb",
+    "naumovs.color-highlight",
+    "ms-azuretools.vscode-containers",
+    "ms-vscode-remote.remote-containers",
+    "docker.docker",
+    "editorconfig.editorconfig",
+    "golang.go",
+    "oxc.oxc-vscode",
+    "mechatroner.rainbow-csv",
+    "bradlc.vscode-tailwindcss",
+    "gruntfuggly.todo-tree",
+    "mattpocock.ts-error-translator",
+    "vitest.explorer",
+    "vue.volar",
+    "redhat.vscode-yaml",
+    "tomoki1207.pdf"
+  ]
+}

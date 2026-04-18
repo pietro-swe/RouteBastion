@@ -1,0 +1,73 @@
+# Base
+node_modules
+dist
+build
+
+app.env
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+.temp
+.tmp
+
+.DS_Store
+
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+coverage
+
+# Admin API
+# Tests
+.nyc_output
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Diagnostic reports (https://nodejs.org/api/report.html)
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Admin UI
+dist-ssr
+*.local
+
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+*.tsbuildinfo
+
+.eslintcache
+
+# Vitest
+__screenshots__/
+
+# Vite
+*.timestamp-*-*.mjs
+

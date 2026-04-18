@@ -1,0 +1,139 @@
+name: "RouteBastion_Development"
+
+volumes:
+  cache_data:
+    driver: local
+  db_data:
+    driver: local
+
+services:
+  database:
+    image: dhi.io/postgres:18.1-alpine3.22-dev
+    container_name: "database"
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=docker
+      - POSTGRES_PASSWORD=docker
+      - POSTGRES_DB=route_bastion
+    healthcheck:
+      test: [ "CMD-SHELL", "sh -c 'pg_isready -U docker -d route_bastion'" ]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    volumes:
+      - "db_data:/var/lib/postgresql/data"
+
+  cache:
+    image: redis:7.4.2
+    container_name: "cache"
+    ports:
+      - 6379:6379
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    volumes:
+      - "cache_data:/data"
+
+  broker:
+    build:
+      context: .
+      dockerfile: apps/broker/build/app.dev.Dockerfile
+    depends_on:
+      database:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+    ports:
+      - 8090:8090
+      - 40000:40000 # Delve Debugger
+    volumes:
+      - ./apps/broker:/app
+
+  admin-api:
+    build:
+      context: .
+      dockerfile: apps/admin-api/build/dev.Dockerfile
+    depends_on:
+      database:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+    ports:
+      - 3000:3000
+    volumes:
+      - ./apps/admin-api:/app
+      - /app/node_modules
+
+  api-gateway:
+    image: kong:3.9
+    container_name: "api-gateway"
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      - "KONG_DATABASE=off"
+      - "KONG_ADMIN_LISTEN=0.0.0.0:8001"
+      - "KONG_ADMIN_GUI_URL=http://localhost:8002"
+      - "KONG_DECLARATIVE_CONFIG=/kong/config.yaml"
+      - "KONG_PROXY_ACCESS_LOG=/dev/stdout"
+      - "KONG_ADMIN_ACCESS_LOG=/dev/stdout"
+      - "KONG_PROXY_ERROR_LOG=/dev/stderr"
+      - "KONG_ADMIN_ERROR_LOG=/dev/stderr"
+    volumes:
+      - "apps/broker/config/kong/dev/config.yaml:/kong/config.yaml"
+    ports:
+      - "8000:8000" # Proxy
+      - "8001:8001" # API (Admin)
+      - "8002:8002" # UI (Admin)
+      - "8443:8443" # Proxy SSL (HTTPS)
+      - "8444:8444" # API (Admin) (HTTPS)
+
+  migrations:
+    image: migrate/migrate
+    profiles:
+      - dev
+      - debug
+    depends_on:
+      database:
+        condition: service_healthy
+    volumes:
+      - apps/broker/sql/migrations:/migrations
+    command:
+      [
+        "-path",
+        "migrations",
+        "-database",
+        "postgresql://docker:docker@database:5432/route_bastion?sslmode=disab\
+          le&search_path=public",
+        "up",
+      ]
+    restart: on-failure
+
+  # ------------------------
+  # Seed Service (Dev only)
+  # ------------------------
+  seeds:
+    image: postgres:18.1-alpine
+    container_name: "seeder"
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+    volumes:
+      - ./sql/seeds:/seeds:ro
+    environment:
+      - PGPASSWORD=docker
+    command:
+      [
+        "sh",
+        "-c",
+        " psql
+          postgresql://docker:docker@database:5432/route_bastion?sslmode=disable
+          -f /seeds/001_dev_data.sql ",
+      ]
+    restart: "no"

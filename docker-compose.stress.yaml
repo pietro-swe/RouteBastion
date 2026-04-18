@@ -1,0 +1,67 @@
+name: "RouteBastion_StressTesting"
+
+volumes:
+  cache_data:
+    driver: local
+  db_data:
+    driver: local
+
+services:
+  # ------------------------
+  # Core Services
+  # ------------------------
+  api-limited:
+    profiles:
+      - normal
+    build:
+      context: .
+      dockerfile: apps/broker/build/app.Dockerfile
+    environment:
+      - GIN_MODE=release
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 2048M
+    ports:
+      - 8090-8092:8090
+
+  api:
+    profiles:
+      - normal
+    build:
+      context: .
+      dockerfile: apps/broker/build/app.Dockerfile
+    environment:
+      - GIN_MODE=release
+    depends_on:
+      api-gateway:
+        condition: service_started # TODO: Review
+    ports:
+      - 8090-8092:8090
+
+  # ------------------------
+  # Supporting Services
+  # ------------------------
+  api-gateway:
+    image: kong:3.9
+    container_name: "kong-api-gateway"
+    profiles:
+      - prod
+    environment:
+      - "KONG_DATABASE=off"
+      - "KONG_ADMIN_LISTEN=0.0.0.0:8001"
+      - "KONG_ADMIN_GUI_URL=http://localhost:8002"
+      - "KONG_DECLARATIVE_CONFIG=/kong/config.yaml"
+      - "KONG_PROXY_ACCESS_LOG=/dev/stdout"
+      - "KONG_ADMIN_ACCESS_LOG=/dev/stdout"
+      - "KONG_PROXY_ERROR_LOG=/dev/stderr"
+      - "KONG_ADMIN_ERROR_LOG=/dev/stderr"
+    volumes:
+      - "apps/broker/config/kong/config.yaml:/kong/config.yaml"
+    ports:
+      - "8000:8000" # Proxy
+      - "8001:8001" # API (Admin)
+      - "8002:8002" # UI (Admin)
+      - "8443:8443" # Proxy SSL (HTTPS)
+      - "8444:8444" # API (Admin) (HTTPS)
