@@ -1,21 +1,30 @@
 {
-  "name": "route-bastion",
-  "version": "0.0.1",
-  "description": "RouteBastion Monorepo",
-  "author": {
-    "name": "Pietro Piva Vieira",
-    "email": "pietro.developer@gmail.com",
-    "url": "https://github.com/pietro-swe"
-  },
-  "private": true,
-  "license": "MIT",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
-  "scripts": {
-    "dev": "pnpm -r dev",
-    "build": "pnpm -r build",
-    "lint": "pnpm -r lint"
-  }
+	"name": "route-bastion",
+	"version": "0.0.1",
+	"description": "RouteBastion Monorepo",
+	"author": {
+		"name": "Pietro Piva Vieira",
+		"email": "pietro.developer@gmail.com",
+		"url": "https://github.com/pietro-swe"
+	},
+	"private": true,
+	"license": "MIT",
+	"workspaces": [
+		"apps/*",
+		"packages/*"
+	],
+	"scripts": {
+		"dev": "pnpm -r dev",
+		"build": "pnpm -r build",
+		"lint": "biome check .",
+		"format": "biome format .",
+		"lint:fix": "biome check . --write",
+		"prepare": "husky"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.4.12",
+		"husky": "^9.1.7",
+		"lint-staged": "^16.4.0",
+		"vite-tsconfig-paths": "^6.1.1"
+	}
 }

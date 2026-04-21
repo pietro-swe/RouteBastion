@@ -1,7 +1,0 @@
-{
-  "$schema": "./node_modules/oxfmt/configuration_schema.json",
-  "semi": true,
-  "trailingComma": "all",
-  "singleQuote": true,
-  "sortTailwindcss": true
-}

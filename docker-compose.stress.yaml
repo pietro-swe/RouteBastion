@@ -12,7 +12,7 @@ services:
   # ------------------------
   api-limited:
     profiles:
-      - normal
+      - limited
     build:
       context: .
       dockerfile: apps/broker/build/app.Dockerfile
@@ -47,7 +47,8 @@ services:
     image: kong:3.9
     container_name: "kong-api-gateway"
     profiles:
-      - prod
+      - normal
+      - limited
     environment:
       - "KONG_DATABASE=off"
       - "KONG_ADMIN_LISTEN=0.0.0.0:8001"
