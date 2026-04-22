@@ -1,1 +1,33 @@
 * text=auto eol=lf
+
+*.go text
+*.ts text
+*.js text
+*.vue text
+
+*.json text
+*.yml text
+*.yaml text
+*.toml text
+*.env text
+*.sh text
+*.md text
+
+.editorconfig text
+*.Dockerfile text
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+
+package-lock.json -diff
+pnpm-lock.yaml -diff
+
+go.mod text
+go.sum text
