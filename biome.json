@@ -39,6 +39,11 @@
 			}
 		}
 	},
+	"javascript": {
+		"parser": {
+			"unsafeParameterDecoratorsEnabled": true
+		}
+	},
 	"html": {
 		"experimentalFullSupportEnabled": true
 	}

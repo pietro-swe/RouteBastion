@@ -7,12 +7,78 @@ volumes:
     driver: local
 
 services:
-  database:
+  admin-database:
     image: dhi.io/postgres:18.1-alpine3.22-dev
-    container_name: "database"
+    container_name: "admin-database"
     restart: always
     ports:
       - 5432:5432
+    environment:
+      - POSTGRES_USER=docker
+      - POSTGRES_PASSWORD=docker
+      - POSTGRES_DB=route_bastion_admin
+    healthcheck:
+      test: [ "CMD-SHELL", "sh -c 'pg_isready -U docker -d route_bastion_admin'" ]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    volumes:
+      - "db_data:/var/lib/postgresql/data"
+
+  admin-cache:
+    image: redis:7.4.2
+    container_name: "admin-cache"
+    ports:
+      - 6379:6379
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    volumes:
+      - "cache_data:/data"
+
+  admin-api:
+    build:
+      context: .
+      dockerfile: apps/admin-api/build/dev.Dockerfile
+    depends_on:
+      admin-database:
+        condition: service_healthy
+      admin-cache:
+        condition: service_healthy
+    ports:
+      - 3000:3000
+    volumes:
+      - ./apps/admin-api:/app
+      - /app/node_modules
+
+  #################################
+  #           Broker              #
+  #################################
+  broker:
+    build:
+      context: .
+      dockerfile: apps/broker/build/app.dev.Dockerfile
+    depends_on:
+      broker-database:
+        condition: service_healthy
+      broker-cache:
+        condition: service_healthy
+    ports:
+      - 8090:8090
+      - 40000:40000 # Delve Debugger
+    volumes:
+      - ./apps/broker:/app
+
+  broker-database:
+    image: dhi.io/postgres:18.1-alpine3.22-dev
+    container_name: "broker-database"
+    restart: always
+    ports:
+      - 5433:5432
     environment:
       - POSTGRES_USER=docker
       - POSTGRES_PASSWORD=docker
@@ -26,11 +92,11 @@ services:
     volumes:
       - "db_data:/var/lib/postgresql/data"
 
-  cache:
+  broker-cache:
     image: redis:7.4.2
-    container_name: "cache"
+    container_name: "broker-cache"
     ports:
-      - 6379:6379
+      - 6380:6379
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
@@ -39,36 +105,6 @@ services:
       start_period: 15s
     volumes:
       - "cache_data:/data"
-
-  broker:
-    build:
-      context: .
-      dockerfile: apps/broker/build/app.dev.Dockerfile
-    depends_on:
-      database:
-        condition: service_healthy
-      cache:
-        condition: service_healthy
-    ports:
-      - 8090:8090
-      - 40000:40000 # Delve Debugger
-    volumes:
-      - ./apps/broker:/app
-
-  admin-api:
-    build:
-      context: .
-      dockerfile: apps/admin-api/build/dev.Dockerfile
-    depends_on:
-      database:
-        condition: service_healthy
-      cache:
-        condition: service_healthy
-    ports:
-      - 3000:3000
-    volumes:
-      - ./apps/admin-api:/app
-      - /app/node_modules
 
   api-gateway:
     image: kong:3.9

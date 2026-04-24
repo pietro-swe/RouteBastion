@@ -1,3 +1,4 @@
+import { createZodDto } from "nestjs-zod";
 import z from "zod";
 
 const schema = z.object({
@@ -6,3 +7,5 @@ const schema = z.object({
 	birthDate: z.iso.date(),
 	password: z.string().min(12),
 });
+
+export class CreateUserInput extends createZodDto(schema) {}
