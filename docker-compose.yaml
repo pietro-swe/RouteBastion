@@ -1,12 +1,38 @@
 name: "RouteBastion_Development"
 
 volumes:
-  cache_data:
+  admin_cache_data:
     driver: local
-  db_data:
+  broker_cache_data:
+    driver: local
+  admin_db_data:
+    driver: local
+  broker_db_data:
     driver: local
 
 services:
+  #################################
+  #          Admin API            #
+  #################################
+  admin-api:
+    container_name: "admin-api"
+    build:
+      context: .
+      dockerfile: apps/admin-api/dev.Dockerfile
+    depends_on:
+      admin-database:
+        condition: service_healthy
+      admin-cache:
+        condition: service_healthy
+    ports:
+      - 3000:3000
+      - 9229:9229 # Debugger
+    volumes:
+      - ./apps/admin-api:/app/apps/admin-api
+      - /app/node_modules
+      - /app/apps/admin-api/node_modules
+      - /pnpm-store
+
   admin-database:
     image: dhi.io/postgres:18.1-alpine3.22-dev
     container_name: "admin-database"
@@ -24,7 +50,7 @@ services:
       retries: 3
       start_period: 15s
     volumes:
-      - "db_data:/var/lib/postgresql/data"
+      - "admin_db_data:/var/lib/postgresql/data"
 
   admin-cache:
     image: redis:7.4.2
@@ -38,30 +64,16 @@ services:
       retries: 3
       start_period: 15s
     volumes:
-      - "cache_data:/data"
-
-  admin-api:
-    build:
-      context: .
-      dockerfile: apps/admin-api/build/dev.Dockerfile
-    depends_on:
-      admin-database:
-        condition: service_healthy
-      admin-cache:
-        condition: service_healthy
-    ports:
-      - 3000:3000
-    volumes:
-      - ./apps/admin-api:/app
-      - /app/node_modules
+      - "admin_cache_data:/data"
 
   #################################
   #           Broker              #
   #################################
   broker:
+    container_name: "broker"
     build:
       context: .
-      dockerfile: apps/broker/build/app.dev.Dockerfile
+      dockerfile: apps/broker/build/dev.Dockerfile
     depends_on:
       broker-database:
         condition: service_healthy
@@ -71,7 +83,9 @@ services:
       - 8090:8090
       - 40000:40000 # Delve Debugger
     volumes:
-      - ./apps/broker:/app
+      - ./apps/broker:/app/apps/broker
+      - /go/pkg/mod
+      - /root/.cache/go-build
 
   broker-database:
     image: dhi.io/postgres:18.1-alpine3.22-dev
@@ -90,7 +104,7 @@ services:
       retries: 3
       start_period: 15s
     volumes:
-      - "db_data:/var/lib/postgresql/data"
+      - "broker_db_data:/var/lib/postgresql/data"
 
   broker-cache:
     image: redis:7.4.2
@@ -104,13 +118,13 @@ services:
       retries: 3
       start_period: 15s
     volumes:
-      - "cache_data:/data"
+      - "broker_cache_data:/data"
 
   api-gateway:
     image: kong:3.9
     container_name: "api-gateway"
     depends_on:
-      database:
+      broker-database:
         condition: service_healthy
     environment:
       - "KONG_DATABASE=off"
@@ -122,7 +136,7 @@ services:
       - "KONG_PROXY_ERROR_LOG=/dev/stderr"
       - "KONG_ADMIN_ERROR_LOG=/dev/stderr"
     volumes:
-      - "apps/broker/config/kong/dev/config.yaml:/kong/config.yaml"
+      - "./apps/broker/config/kong/dev/config.yaml:/kong/config.yaml"
     ports:
       - "8000:8000" # Proxy
       - "8001:8001" # API (Admin)
@@ -132,44 +146,19 @@ services:
 
   migrations:
     image: migrate/migrate
-    profiles:
-      - dev
-      - debug
+    container_name: "migrations"
     depends_on:
-      database:
+      broker-database:
         condition: service_healthy
     volumes:
-      - apps/broker/sql/migrations:/migrations
+      - "./apps/broker/sql/migrations:/migrations"
     command:
       [
         "-path",
         "migrations",
         "-database",
-        "postgresql://docker:docker@database:5432/route_bastion?sslmode=disab\
-          le&search_path=public",
+        "postgresql://docker:docker@broker-database:5432/route_bastion?sslmod\
+          e=disable&search_path=public",
         "up",
       ]
     restart: on-failure
-
-  # ------------------------
-  # Seed Service (Dev only)
-  # ------------------------
-  seeds:
-    image: postgres:18.1-alpine
-    container_name: "seeder"
-    depends_on:
-      migrations:
-        condition: service_completed_successfully
-    volumes:
-      - ./sql/seeds:/seeds:ro
-    environment:
-      - PGPASSWORD=docker
-    command:
-      [
-        "sh",
-        "-c",
-        " psql
-          postgresql://docker:docker@database:5432/route_bastion?sslmode=disable
-          -f /seeds/001_dev_data.sql ",
-      ]
-    restart: "no"

@@ -1,4 +1,6 @@
+import { DatabaseModule } from "@Modules/infra/database/database.module";
 import { ZodExceptionFilter } from "@Modules/infra/http/filters/zod-exception.filter";
+import { UsersModule } from "@Modules/users/users.module";
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from "@nestjs/core";
@@ -12,6 +14,8 @@ import env from "./modules/config/env";
 			isGlobal: true,
 			load: [env],
 		}),
+		DatabaseModule,
+		UsersModule,
 	],
 	providers: [
 		{

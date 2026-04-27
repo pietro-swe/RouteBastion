@@ -1,5 +1,3 @@
-import "dotenv/config";
-
 import { env } from "@Modules/config/env";
 import { defineConfig } from "drizzle-kit";
 

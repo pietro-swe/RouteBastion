@@ -1,0 +1,40 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"type": "dockerfile",
+			"request": "launch",
+			"name": "Docker: Build",
+			"dockerfile": "${file}",
+			"contextPath": "${workspaceFolder}"
+		},
+		{
+			"name": "Attach Admin API (Docker)",
+			"type": "node",
+			"request": "attach",
+			"remoteRoot": "/app/apps/admin-api",
+			"localRoot": "${workspaceFolder}/apps/admin-api",
+			"restart": true,
+			"sourceMaps": true,
+			"skipFiles": [
+				"<node_internals>/**"
+			]
+		},
+		{
+			"name": "Attach Broker (Docker)",
+			"type": "go",
+			"request": "attach",
+			"mode": "remote",
+			"host": "localhost",
+			"port": 40000,
+			"remotePath": "/app/apps/broker",
+			"cwd": "${workspaceFolder}/apps/broker",
+			"substitutePath": [
+				{
+					"from": "${workspaceFolder}/apps/broker",
+					"to": "/app/apps/broker"
+				}
+			]
+		}
+	]
+}

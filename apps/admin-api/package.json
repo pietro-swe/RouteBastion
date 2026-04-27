@@ -14,7 +14,7 @@
 		"format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
 		"start": "nest start",
 		"start:dev": "nest start --watch",
-		"start:debug": "nest start --debug --watch",
+		"start:debug": "nest start --debug 0.0.0.0:9229 --watch",
 		"start:prod": "node dist/main",
 		"test": "vitest run",
 		"test:watch": "vitest",
@@ -23,6 +23,7 @@
 		"test:e2e": "vitest run --config ./vitest.config.e2e.ts"
 	},
 	"dependencies": {
+		"@fastify/static": "^9.1.3",
 		"@nestjs/common": "^11.0.1",
 		"@nestjs/config": "^4.0.4",
 		"@nestjs/core": "^11.0.1",

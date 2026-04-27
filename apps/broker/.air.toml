@@ -1,13 +1,13 @@
 root = "."
 testdata_dir = "testdata"
-tmp_dir = "tmp"
+tmp_dir = "/tmp"
 
 [build]
 args_bin = []
-bin = "./tmp/main"
-cmd = "go build -o ./tmp/main cmd/main.go"
+cmd = "dlv debug ./cmd --headless --listen=:40000 --api-version=2 --accept-multiclient --continue --output=/tmp/air/main"
+bin = "/tmp/main"
 delay = 1000
-exclude_dir = ["assets", "tmp", "vendor", "testdata", ".vscode", "deployments", "scripts", "build", "tests", "docker", ".vscode", ".github", "sql"]
+exclude_dir = ["assets", "tmp", "vendor", "testdata", ".vscode", "deployments", "scripts", "build", "tests", "docker", ".github", "sql"]
 exclude_file = [".dockerignore", ".editorconfig", ".gitignore"]
 exclude_regex = ["_test.go", ".env"]
 exclude_unchanged = false
