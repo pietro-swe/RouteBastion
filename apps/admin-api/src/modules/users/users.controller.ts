@@ -1,4 +1,4 @@
-import { ErrorOutput } from "@Shared/outputs/error";
+import { ErrorOutput } from "@Shared/http/outputs/error";
 import {
 	Body,
 	ConflictException,

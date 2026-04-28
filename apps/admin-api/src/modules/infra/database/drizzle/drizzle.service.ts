@@ -1,4 +1,4 @@
-import { Env } from "@Modules/config/env";
+import type { Env } from "@Modules/config/env";
 import {
 	Injectable,
 	type OnModuleDestroy,
@@ -7,11 +7,13 @@ import {
 import { ConfigService } from "@nestjs/config";
 import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
+import type { Schema } from "./schema";
 
 @Injectable()
 export class DrizzleService implements OnModuleInit, OnModuleDestroy {
 	private pool: Pool;
-	db: NodePgDatabase;
+
+	db: NodePgDatabase<Schema>;
 
 	constructor(private readonly configService: ConfigService<Env, true>) {}
 

@@ -13,21 +13,21 @@ export class DrizzleUsersRepository extends UsersRepository {
 	}
 
 	async getByID(id: string): Promise<User | null> {
-		const [user] = await this.drizzle.db
-			.select()
-			.from(users)
-			.where(eq(users.id, id))
-			.limit(1);
+		const user = await this.drizzle.db.query.users
+			.findFirst({
+				where: eq(users.id, id),
+			})
+			.execute();
 
 		return user ?? null;
 	}
 
 	async getByEmail(email: string): Promise<User | null> {
-		const [user] = await this.drizzle.db
-			.select()
-			.from(users)
-			.where(eq(users.email, email))
-			.limit(1);
+		const user = await this.drizzle.db.query.users
+			.findFirst({
+				where: eq(users.email, email),
+			})
+			.execute();
 
 		return user ?? null;
 	}

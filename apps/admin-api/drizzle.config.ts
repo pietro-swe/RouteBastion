@@ -8,6 +8,7 @@ export default defineConfig({
 		"./src/modules/infra/database/drizzle/tables",
 	],
 	dialect: "postgresql",
+	casing: "snake_case",
 	dbCredentials: {
 		url: env.DATABASE_URL,
 	},
