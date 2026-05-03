@@ -1,14 +1,27 @@
 {
-  "files": [],
-  "references": [
-    {
-      "path": "./tsconfig.node.json"
-    },
-    {
-      "path": "./tsconfig.app.json"
-    },
-    {
-      "path": "./tsconfig.vitest.json"
-    }
-  ]
+	"files": [],
+	"compilerOptions": {
+		"paths": {
+			"@Types/*": [
+				"./src/@types/*"
+			],
+			"@Shared/*": [
+				"./src/shared/*"
+			],
+			"@Modules/*": [
+				"./src/modules/*"
+			],
+		}
+	},
+	"references": [
+		{
+			"path": "./tsconfig.node.json"
+		},
+		{
+			"path": "./tsconfig.app.json"
+		},
+		{
+			"path": "./tsconfig.vitest.json"
+		}
+	]
 }
