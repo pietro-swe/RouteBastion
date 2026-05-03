@@ -11,7 +11,7 @@
 
 `T1 → T2 → T3`
 
-### Phase 2: Backend Core (Sequential, due to e2e/env/cookie coupling)
+### Phase 2: Backend Core (Sequential, due to integration/env/cookie coupling)
 
 `T3 → T4 → T5 → T6`
 
@@ -52,7 +52,7 @@
 
 ### T2: Add backend auth foundations and security primitives
 
-**What**: Add env schema entries, Nest Redis cache wiring, password hashing adapter, token service abstractions, and cookie helper scaffolding for auth.
+**What**: Add env schema entries, Nest Redis cache wiring, `JwtModule`/`JwtService` setup, password hashing adapter, token service abstractions, and cookie helper scaffolding for auth.
 **Where**: `apps/admin-api/src/modules/auth/**`, `apps/admin-api/src/modules/config/env/index.ts`, app bootstrap wiring
 **Depends on**: T1
 **Reuses**: Existing env module and module/provider organization
@@ -69,15 +69,15 @@
 - [ ] `@fastify/cookie` registration is wired into Fastify bootstrap
 - [ ] Nest `CacheModule` is configured asynchronously for Redis-backed usage only
 - [ ] Redis-backed refresh session interface and adapter exist
-- [ ] Password hashing and token service abstractions exist using `bcrypt`
+- [ ] Password hashing and token service abstractions exist using `bcrypt` and `@nestjs/jwt`
 - [ ] Cookie helper is ready to read/set/clear auth cookies with Fastify
 - [ ] Unit tests cover core helpers/services
 - [ ] Gate check passes: `pnpm --filter admin-api test`
 
 **Install commands**:
 
-- `pnpm install @fastify/cookie bcrypt jsonwebtoken --filter admin-api`
-- `pnpm install @types/bcrypt @types/jsonwebtoken --filter admin-api --save-dev`
+- `pnpm install @fastify/cookie @nestjs/jwt bcrypt --filter admin-api`
+- `pnpm install @types/bcrypt --filter admin-api --save-dev`
 
 **Tests**: unit
 **Gate**: quick
@@ -111,7 +111,7 @@
 
 ### T4: Implement auth API endpoints and Redis-backed refresh rotation
 
-**What**: Implement `POST /auth`, refresh, logout, and optional current-session endpoint behavior using shared contracts, cookie transport, and Redis refresh rotation.
+**What**: Implement `POST /auth`, refresh, logout, and optional current-session endpoint behavior using shared contracts, cookie transport, `@nestjs/jwt`, and Redis refresh rotation.
 **Where**: `apps/admin-api/src/modules/auth/**`, `apps/admin-api/src/app.module.ts`, Swagger setup if needed
 **Depends on**: T3
 **Reuses**: Nest controller/service patterns and shared contracts package
@@ -128,10 +128,10 @@
 - [ ] Refresh rotates refresh sessions in Redis and rejects replay/revoked sessions
 - [ ] Logout revokes refresh state and clears cookies
 - [ ] Optional session bootstrap endpoint is implemented if chosen
-- [ ] E2E tests cover login, refresh, replay rejection, and logout
-- [ ] Gate check passes: `pnpm --filter admin-api build && pnpm --filter admin-api test && pnpm --filter admin-api test:e2e`
+- [ ] Integration tests cover login, refresh, replay rejection, and logout
+- [ ] Gate check passes: `pnpm --filter admin-api build && pnpm --filter admin-api test`
 
-**Tests**: e2e
+**Tests**: integration
 **Gate**: full
 
 ---
@@ -188,10 +188,10 @@
 
 ---
 
-### T7: Add login route, page, and protected navigation flow
+### T7: Add the login route, login page, and redirect-only navigation flow
 
-**What**: Implement the login UI and router protection so unauthenticated users are redirected away from protected routes.
-**Where**: `apps/admin-ui/src/router/index.ts`, auth page/components, related route files
+**What**: Implement the single login page with `@primevue/forms` plus Zod validation and wire router behavior so the app uses redirects instead of additional pages in this slice.
+**Where**: `apps/admin-ui/src/router/index.ts`, login page/components, related route files
 **Depends on**: T6
 **Reuses**: Existing `routes.Login` and router scaffold
 **Requirement**: AUTH-01, AUTH-02
@@ -203,10 +203,10 @@
 
 **Done when**:
 
+- [ ] Login page uses `@primevue/forms` with a Zod-backed resolver
 - [ ] Login page submits credentials through the auth store
-- [ ] Protected routes declare auth requirements
-- [ ] Router redirects unauthenticated access to login
-- [ ] Unit/component tests cover redirect behavior and login submission states
+- [ ] Router behavior uses redirects rather than rendering additional authenticated pages
+- [ ] Unit/component tests cover redirect behavior, form validation, and login submission states
 - [ ] Gate check passes: `pnpm --filter admin-ui test:unit`
 
 **Tests**: unit
@@ -214,9 +214,9 @@
 
 ---
 
-### T8: Wire end-to-end UI bootstrap behavior
+### T8: Wire UI bootstrap behavior
 
-**What**: Integrate app startup with auth restoration so reloads on protected routes behave correctly with cookie-backed sessions.
+**What**: Integrate app startup with auth restoration so reloads behave correctly with cookie-backed sessions and redirect decisions.
 **Where**: `apps/admin-ui/src/main.ts`, `apps/admin-ui/src/App.vue`, auth store/router integration points
 **Depends on**: T7
 **Reuses**: Auth store from T6 and route rules from T7
@@ -230,7 +230,7 @@
 **Done when**:
 
 - [ ] App startup waits for or safely handles initial auth restoration
-- [ ] Expired sessions fall back to login without partial protected render
+- [ ] Expired sessions fall back to login without partial render of a second page
 - [ ] Unit tests cover bootstrap success and bootstrap failure paths
 - [ ] Gate check passes: `pnpm --filter admin-ui build && pnpm --filter admin-ui test:unit`
 
@@ -290,7 +290,7 @@ No tasks are marked `[P]` in this draft. The current auth scope touches shared c
 | T1 | Shared contracts package | none | quick | Pass |
 | T2 | API services/helpers | unit | quick | Pass |
 | T3 | API repository/service | unit | quick | Pass |
-| T4 | API endpoint/cookie/session flow | e2e | full | Pass |
+| T4 | API endpoint/cookie/session flow | integration | full | Pass |
 | T5 | API guard primitives | unit | quick | Pass |
 | T6 | UI store/session flow | unit | quick | Pass |
 | T7 | UI router/page flow | unit | quick | Pass |

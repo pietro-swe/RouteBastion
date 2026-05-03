@@ -8,7 +8,7 @@
 
 ## Feature Boundary
 
-Deliver admin login, refresh, logout, shared auth contracts, UI route protection, and backend guard primitives for the admin surface. The feature does not include password recovery, MFA, or role/permission modeling beyond authenticated admin access.
+Deliver admin login, refresh, logout, shared auth contracts, a single Admin UI login page, redirect behavior, and backend guard primitives for the admin surface. The feature does not include password recovery, MFA, role/permission modeling beyond authenticated admin access, or additional authenticated UI pages.
 
 ---
 
@@ -26,6 +26,11 @@ Deliver admin login, refresh, logout, shared auth contracts, UI route protection
 - Cookie-based transport should support a secure Admin UI session flow with server-managed refresh handling.
 - Fastify cookie support should be implemented with `@fastify/cookie`.
 
+### JWT Library
+
+- JWT generation and verification should use `@nestjs/jwt`.
+- Nest's `JwtModule` and `JwtService` are the expected integration path for token issuance and validation.
+
 ### Refresh Rotation
 
 - Refresh tokens rotate on every successful refresh.
@@ -41,6 +46,13 @@ Deliver admin login, refresh, logout, shared auth contracts, UI route protection
 - Backend auth guards should be created as part of this feature.
 - Those guards should not yet be applied to existing endpoints.
 
+### Frontend Scope
+
+- The Admin UI should expose only a login page in this slice.
+- After successful login or during unauthenticated startup, routing behavior should use redirects rather than rendering additional pages.
+- The login form should be built with `@primevue/forms`.
+- Form validation should use `zod` through the PrimeVue Forms resolver path.
+
 ### Agent's Discretion
 
 - Cookie naming conventions.
@@ -55,6 +67,8 @@ Deliver admin login, refresh, logout, shared auth contracts, UI route protection
 - No external product references were provided.
 - The monolith should keep contracts in a shared internal package consumed by `apps/admin-api` and `apps/admin-ui`.
 - Use `bcrypt` for secure password hashing.
+- Use `@nestjs/jwt` for JWT token work.
+- Use `@primevue/forms` plus Zod resolver-based validation for the login form.
 - If dependencies are needed in the Admin API, install them with `pnpm install ... --filter admin-api`.
 
 ## Deferred Ideas

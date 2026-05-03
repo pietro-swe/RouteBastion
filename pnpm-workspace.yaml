@@ -5,4 +5,5 @@ allowBuilds:
   '@nestjs/core': true
   '@scarf/scarf': true
   '@swc/core': true
+  bcrypt: false
   esbuild: true

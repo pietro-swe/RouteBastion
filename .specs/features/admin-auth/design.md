@@ -8,25 +8,25 @@
 
 ## Architecture Overview
 
-Add a dedicated auth slice to `admin-api`, a shared `packages/admin-auth-contracts` package, and a small auth integration layer in `admin-ui`. Access authentication will be short-lived and stateless in signed access tokens, while refresh continuity will be stateful in Redis-backed refresh sessions transported with cookies and rotated on every refresh.
+Add a dedicated auth slice to `admin-api`, a shared `packages/admin-auth-contracts` package, and a minimal auth integration layer in `admin-ui`. Access authentication will be short-lived and stateless in signed access tokens issued through Nest's `JwtService`, while refresh continuity will be stateful in Redis-backed refresh sessions transported with cookies and rotated on every refresh.
 
-The API will issue and validate cookies, store refresh-session metadata in Redis, and expose guard classes that future admin endpoints can opt into. The UI will submit credentials with `credentials: "include"`, bootstrap session state on startup, and protect routes via the existing router/store structure.
+The API will issue and validate cookies, store refresh-session metadata in Redis, and expose guard classes that future admin endpoints can opt into. The UI will provide only a login page, submit credentials with `credentials: "include"`, validate form data with PrimeVue Forms plus Zod, and use redirects instead of rendering additional pages in this slice.
 
 ```mermaid
 graph TD
-    A[Admin UI Login Form] --> B[Shared Auth Contracts Package]
-    A --> C[Admin API POST /auth]
-    C --> D[Auth Module]
-    D --> E[Users Repository]
-    D --> F[Password Hasher]
-    D --> G[Access Token Signer]
-    D --> H[Redis Refresh Session Store]
-    C --> I[Set-Cookie Response]
-    A --> J[Pinia Auth Store]
-    J --> K[Router Guard]
-    J --> L[/auth/refresh with credentials]
-    L --> D
-    J --> M[/auth/logout]
+    A[Admin UI Login Page] --> B[Shared Auth Contracts Package]
+    A --> C[PrimeVue Form + Zod Resolver]
+    C --> D[Admin API POST /auth]
+    D --> E[Auth Module]
+    E --> F[Users Repository]
+    E --> G[Password Hasher]
+    E --> H[JwtService via JwtModule]
+    E --> I[Redis Refresh Session Store]
+    D --> J[Set-Cookie Response]
+    A --> K[Auth Store]
+    K --> L[/auth/refresh with credentials]
+    L --> E
+    K --> M[Router Redirect Decisions]
 ```
 
 ---
@@ -42,6 +42,7 @@ graph TD
 | Existing `UsersRepository` abstraction | `apps/admin-api/src/modules/users/users.repository.ts` | Extend or add auth-specific lookup methods rather than bypassing repository boundaries |
 | Zod DTO pattern | `apps/admin-api/src/modules/users/inputs/create.ts` and `outputs/create.ts` | Keep request/response schemas aligned with current API style |
 | Existing UI auth route/store placeholders | `apps/admin-ui/src/router/index.ts`, `src/shared/stores/auth.ts` | Fill in the current scaffolding instead of introducing a second state pattern |
+| PrimeVue stack already present | `apps/admin-ui/package.json` | Extend the existing PrimeVue UI stack with `@primevue/forms` rather than introducing a second form library |
 
 ### Integration Points
 
@@ -86,7 +87,7 @@ graph TD
   - `POST /auth/refresh`
   - `POST /auth/logout`
   - Optional `GET /auth/me` for bootstrap-friendly current session retrieval
-- **Dependencies**: `UsersRepository`, token service, cookie helper, refresh session store, password hasher
+- **Dependencies**: `UsersRepository`, `JwtModule` / `JwtService`, cookie helper, refresh session store, password hasher
 - **Reuses**: Existing Nest module/controller/service structure and Zod response patterns
 
 ### Password Hashing Adapter
@@ -106,8 +107,8 @@ graph TD
 - **Interfaces**:
   - `issueAccessToken(user: SessionUser): Promise<string>`
   - `verifyAccessToken(token: string): Promise<AccessClaims>`
-- **Dependencies**: JWT signing library, env config
-- **Reuses**: Existing env/config module
+- **Dependencies**: `@nestjs/jwt`, `JwtService`, env config
+- **Reuses**: Existing env/config module and Nest DI conventions
 
 ### Refresh Session Store
 
@@ -153,15 +154,25 @@ graph TD
 
 ### Admin UI Auth Integration
 
-- **Purpose**: Handle login form submission, startup bootstrap, refresh recovery, logout, and protected routing.
+- **Purpose**: Handle login form submission, startup bootstrap, refresh recovery, logout, and redirect-only routing.
 - **Location**: `apps/admin-ui/src/shared/stores/auth.ts`, `src/router/index.ts`, auth page/components
 - **Interfaces**:
   - `login(credentials)`
   - `restoreSession()`
   - `logout()`
-  - route meta / navigation guard contract
+  - redirect decision contract
 - **Dependencies**: shared auth contracts package, browser fetch client with `credentials: "include"`
 - **Reuses**: existing Pinia store and router placeholders
+
+### Login Form
+
+- **Purpose**: Provide the only user-facing Admin UI page in this slice for credential input and validation feedback.
+- **Location**: `apps/admin-ui/src/modules/auth/` or current view structure
+- **Interfaces**:
+  - `<Form :initialValues :resolver @submit>`
+  - field `name` bindings for `email` and `password`
+- **Dependencies**: `@primevue/forms`, `@primevue/forms/resolvers`, `zod`, existing PrimeVue input components
+- **Reuses**: Existing PrimeVue stack already installed in the UI app
 
 ---
 
@@ -243,8 +254,8 @@ interface AuthCookies {
 
 ### Bootstrap
 
-- Preferred approach: UI calls `/auth/me` on startup if it has reason to believe cookies exist; if unauthorized, it can fall back to `/auth/refresh` only if bootstrap semantics require silent recovery.
-- If implementation simplicity is preferred, `/auth/refresh` can serve as the bootstrap entrypoint and return the same session payload as login.
+- UI can call `/auth/me` on startup if it has reason to believe cookies exist; if unauthorized, it can fall back to `/auth/refresh` only if bootstrap semantics require silent recovery.
+- Because the UI exposes only a login page in this slice, bootstrap decisions should end in either "remain on /auth" or "redirect away from /auth" rather than rendering a second dedicated page.
 
 ---
 
@@ -254,7 +265,7 @@ interface AuthCookies {
 | -------------- | -------- | ----------- |
 | Invalid email/password | `401 Unauthorized` auth error contract | Login page shows generic invalid-credentials message |
 | Soft-deleted user | same as invalid credentials | No account-state leakage |
-| Missing/expired access token | Guard rejects request | Protected API call fails cleanly; UI can attempt refresh or redirect |
+| Missing/expired access token | Guard rejects request | Future protected API call fails cleanly; UI can attempt refresh or redirect |
 | Invalid/replayed refresh token | `401 Unauthorized`, clear cookies | UI session is cleared and user returns to login |
 | Redis unavailable during refresh/login | `503` or controlled server error response | User sees session-unavailable message and cannot continue silently |
 | Cookie plugin misconfiguration | startup/config error | Fails fast instead of producing partial auth behavior |
@@ -270,9 +281,11 @@ interface AuthCookies {
 | Refresh persistence | Redis-backed session records | Required by user and supports rotation/revocation |
 | Transport | Cookies for access and refresh tokens | Matches requested transport and simplifies browser request wiring |
 | Login route | `POST /auth` | Locked by API requirement |
+| JWT integration | `@nestjs/jwt` | Matches Nest's official authentication guidance and keeps JWT work inside Nest DI/module patterns |
 | Password hashing | `bcrypt` | Explicit security requirement |
 | Nest cookie integration | `@fastify/cookie` | Official Fastify integration path from Nest docs |
 | Redis integration path | Nest `CacheModule` backed by Redis only | Matches requested framework integration and avoids in-memory auth sessions |
+| Login form stack | `@primevue/forms` with Zod resolver | Matches requested frontend form approach and existing PrimeVue stack |
 | Guard rollout | Build guards now, do not attach yet | Prepares the API for protected endpoints without widening the first integration blast radius |
 | User eligibility | Entire `users` table | Matches current admin-only identity table assumption |
 | Soft-delete handling | Exclude `deletedAt != null` from auth | Avoids authenticating inactive admin users |
@@ -280,4 +293,4 @@ interface AuthCookies {
 ## Open Implementation Questions
 
 - Whether to store both access and refresh tokens in cookies, or keep only refresh in an HTTP-only cookie and derive access state differently. The current user requirement only fixes cookie transport, not the split.
-- JWT library choice and exact Redis key layout for refresh-token family/replay tracking.
+- Exact Redis key layout for refresh-token family/replay tracking.

@@ -4,13 +4,13 @@
 
 The admin surface currently has user management data structures but no authentication flow connecting the Admin API and Admin UI. We need a shared, type-safe authentication contract inside the monolith so both applications implement the same login, refresh, logout, and current-session behavior without drift.
 
-This feature must establish a secure admin session model with refresh token support, route protection in the UI, and backend authorization boundaries that future admin-only endpoints can reuse.
+This feature must establish a secure admin session model with refresh token support, a minimal login-only Admin UI, and backend authorization boundaries that future admin-only endpoints can reuse.
 
 ## Goals
 
 - [ ] Admin users can authenticate from the Admin UI against the Admin API.
 - [ ] Access and refresh flows use shared contracts consumed by both applications.
-- [ ] Authenticated admin routes can be protected in the UI and in the API.
+- [ ] The Admin UI exposes a single login page with validated form submission and redirect behavior.
 - [ ] Session renewal works without forcing frequent re-login while preserving revocation control.
 
 ## Out of Scope
@@ -37,11 +37,11 @@ Explicitly excluded for the first slice to prevent scope creep.
 **Acceptance Criteria**:
 
 1. WHEN a valid admin email and password are submitted to `POST /auth` THEN the Admin API SHALL authenticate the user and return the shared login response contract.
-2. WHEN authentication succeeds THEN the Admin UI SHALL persist the session according to the chosen token storage strategy and allow navigation to protected routes.
+2. WHEN authentication succeeds THEN the Admin UI SHALL persist the session according to the chosen cookie-based strategy and redirect away from the login page.
 3. WHEN invalid credentials are submitted THEN the Admin API SHALL reject the request with a documented auth error contract and the Admin UI SHALL present a non-destructive error state.
-4. WHEN an unauthenticated user attempts to access a protected admin route THEN the Admin UI SHALL redirect that user to the login route.
+4. WHEN the Admin UI is loaded without an authenticated session THEN it SHALL redirect to the login route rather than rendering a second application page.
 
-**Independent Test**: Submit valid credentials, land on a protected route, reload the page, and remain authenticated according to the chosen session strategy.
+**Independent Test**: Submit valid credentials, observe successful redirect behavior, reload the app, and confirm the login flow restores or clears the session correctly.
 
 ---
 
@@ -86,10 +86,10 @@ Explicitly excluded for the first slice to prevent scope creep.
 
 **Acceptance Criteria**:
 
-1. WHEN the Admin UI starts with a still-valid session THEN it SHALL resolve the current user/session state before rendering protected content.
+1. WHEN the Admin UI starts with a still-valid session THEN it SHALL resolve the current user/session state before deciding whether to keep or leave the login route.
 2. WHEN the Admin UI starts with an invalid or expired session that cannot be refreshed THEN it SHALL present the unauthenticated flow.
 
-**Independent Test**: Refresh the browser on a protected route and verify the app restores or rejects the session correctly.
+**Independent Test**: Refresh the browser while authenticated and verify the app restores or rejects the session correctly before redirecting.
 
 ---
 
@@ -113,8 +113,8 @@ Explicitly excluded for the first slice to prevent scope creep.
 
 - WHEN a user record exists but is soft-deleted THEN system SHALL deny authentication.
 - WHEN the same refresh token is replayed after logout or rotation THEN system SHALL reject the request.
-- WHEN a protected API endpoint receives no access token THEN system SHALL reject it with the documented unauthorized contract.
-- WHEN a protected API endpoint receives a malformed or expired access token THEN system SHALL reject it without leaking sensitive detail.
+- WHEN a future protected API endpoint receives no access token THEN system SHALL reject it with the documented unauthorized contract.
+- WHEN a future protected API endpoint receives a malformed or expired access token THEN system SHALL reject it without leaking sensitive detail.
 - WHEN the UI boots with partial or corrupted local auth state THEN system SHALL clear that state and fall back to login.
 
 ## Requirement Traceability
@@ -133,7 +133,7 @@ Explicitly excluded for the first slice to prevent scope creep.
 
 ## Success Criteria
 
-- [ ] An admin can log in from the Admin UI and access a protected route end-to-end.
+- [ ] An admin can log in from the Admin UI and complete the expected redirect flow end-to-end.
 - [ ] The Admin API exposes documented `POST /auth`, refresh, and logout contracts shared through one monorepo package.
 - [ ] A refresh attempt can renew an expired access token during an active session.
 - [ ] Invalid, expired, revoked, or replayed refresh sessions are rejected safely.
@@ -141,7 +141,9 @@ Explicitly excluded for the first slice to prevent scope creep.
 ## Locked Implementation Constraints
 
 1. Login credentials are submitted to `POST /auth`.
-2. Refresh sessions are Redis-backed and rotate on every successful refresh.
-3. Authentication transport is cookie-based.
-4. Password hashing uses `bcrypt`.
-5. Backend guards are implemented now but not yet applied to existing routes.
+2. JWT generation and verification use `@nestjs/jwt`.
+3. Refresh sessions are Redis-backed and rotate on every successful refresh.
+4. Authentication transport is cookie-based.
+5. Password hashing uses `bcrypt`.
+6. The frontend ships only a login page with redirects, built with `@primevue/forms` and `zod` validation.
+7. Backend guards are implemented now but not yet applied to existing routes.
