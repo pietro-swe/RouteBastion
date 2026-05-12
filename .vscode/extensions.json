@@ -15,6 +15,7 @@
     "vitest.explorer",
     "vue.volar",
     "redhat.vscode-yaml",
-    "tomoki1207.pdf"
+    "tomoki1207.pdf",
+    "bierner.markdown-mermaid"
   ]
 }
