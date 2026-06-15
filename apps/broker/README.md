@@ -52,4 +52,6 @@ O RouteBastion foi projetado como uma camada intermediária que unifica múltipl
 
 # Arquitetura
 
-Este repositório contém o código do RouteBastion Broker.
+Esta pasta contém a aplicação Broker, responsável pela lógica de corretagem de APIs de VRP.
+
+Mais detalhes da arquitetura podem ser encontrados em [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md)
