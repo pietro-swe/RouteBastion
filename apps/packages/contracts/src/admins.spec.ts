@@ -3,6 +3,7 @@ import {
 	adminOutputSchema,
 	adminStatusSchema,
 	createAdminInputSchema,
+	errorOutputSchema,
 	listAdminsOutputSchema,
 	listAdminsQuerySchema,
 	updateAdminInputSchema,
@@ -69,6 +70,37 @@ describe("adminOutputSchema", () => {
 		});
 		expect(parsed.status).toBe("ACTIVE");
 	});
+
+	it("preserves the full shape including populated nullable fields", () => {
+		const full = {
+			id: "018f8c2a-0000-7000-8000-000000000000",
+			name: "Ana",
+			email: "ana@rb.io",
+			birthDate: "1990-04-12",
+			status: "BLOCKED" as const,
+			isPasswordCreationPending: false,
+			statusChangedAt: "2026-06-16T08:30:00.000Z",
+			createdAt: "2026-06-15T12:00:00.000Z",
+			modifiedAt: "2026-06-16T08:30:00.000Z",
+		};
+		expect(adminOutputSchema.parse(full)).toEqual(full);
+	});
+
+	it("rejects an invalid status", () => {
+		expect(() =>
+			adminOutputSchema.parse({
+				id: "018f8c2a-0000-7000-8000-000000000000",
+				name: "Ana",
+				email: "ana@rb.io",
+				birthDate: "1990-04-12",
+				status: "PENDING",
+				isPasswordCreationPending: true,
+				statusChangedAt: null,
+				createdAt: "2026-06-15T12:00:00.000Z",
+				modifiedAt: null,
+			}),
+		).toThrow();
+	});
 });
 
 // biome-ignore lint/security/noSecrets: false positive — this is a test suite name, not a secret
@@ -92,10 +124,57 @@ describe("listAdminsOutputSchema", () => {
 		});
 		expect(parsed.nextCursor).toBeNull();
 	});
+
+	it("accepts populated items + a non-null nextCursor", () => {
+		const parsed = listAdminsOutputSchema.parse({
+			items: [
+				{
+					id: "018f8c2a-0000-7000-8000-000000000000",
+					name: "Ana",
+					email: "ana@rb.io",
+					birthDate: "1990-04-12",
+					status: "ACTIVE",
+					isPasswordCreationPending: true,
+					statusChangedAt: null,
+					createdAt: "2026-06-15T12:00:00.000Z",
+					modifiedAt: null,
+				},
+			],
+			nextCursor: "next-page-token",
+		});
+		expect(parsed.items).toHaveLength(1);
+		expect(parsed.nextCursor).toBe("next-page-token");
+	});
 });
 
 describe("updateAdminInputSchema", () => {
 	it("requires name, email and birthDate", () => {
 		expect(() => updateAdminInputSchema.parse({ name: "Ana" })).toThrow();
+	});
+
+	it("accepts a valid payload", () => {
+		expect(
+			updateAdminInputSchema.parse({
+				name: "Ana Lima",
+				email: "ana@rb.io",
+				birthDate: "1990-04-12",
+			}),
+		).toEqual({
+			name: "Ana Lima",
+			email: "ana@rb.io",
+			birthDate: "1990-04-12",
+		});
+	});
+});
+
+describe("errorOutputSchema", () => {
+	it("accepts an error message", () => {
+		expect(errorOutputSchema.parse({ error: "boom" })).toEqual({
+			error: "boom",
+		});
+	});
+
+	it("rejects a missing error field", () => {
+		expect(() => errorOutputSchema.parse({})).toThrow();
 	});
 });
