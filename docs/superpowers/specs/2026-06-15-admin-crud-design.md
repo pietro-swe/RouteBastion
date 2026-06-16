@@ -43,6 +43,7 @@ Os responsáveis pelo RouteBastion precisam gerir os acessos administrativos pel
 13. **Datas:** na UI sempre `DD/MM/YYYY`; nos payloads sempre `YYYY-MM-DD` (`birthDate`) e ISO datetime (timestamps).
 14. **Rota** `/dashboard/admins`, aninhada em um `DashboardLayout` (shell mínimo: sidebar + conteúdo).
 15. **E2E com Testcontainers**, imagem fixa `postgres:18` (resolve a constraint de `uuidv7()`).
+16. **Refetch após mutação:** qualquer mutação bem-sucedida (criar/editar/bloquear/desbloquear/deletar) recarrega a listagem **resetando a paginação para o início** e **reenviando o termo de busca ativo** (se houver).
 
 ---
 
@@ -150,7 +151,9 @@ Funções `list({cursor,search})`, `create`, `update(id)`, `block(id)`, `unblock
 
 ### Store (`admins.store.ts`, Pinia setup store)
 
-Estado: `items`, `search`, `loading`, `error`, e uma **pilha de cursors** para suportar "Anterior/Próxima". Ações: `fetchFirstPage`, `fetchNext`, `fetchPrev`, `setSearch` (debounce), `create/update/block/unblock/remove` — chamam o service e **recarregam a primeira página** após mutação.
+Estado: `items`, `search`, `loading`, `error`, e uma **pilha de cursors** para suportar "Anterior/Próxima". Ações: `fetchFirstPage`, `fetchNext`, `fetchPrev`, `setSearch` (debounce), `create/update/block/unblock/remove`.
+
+**Refetch após qualquer mutação (regra explícita):** toda ação que altera a tabela — criar, editar, bloquear, desbloquear, deletar — ao concluir com sucesso dispara um **refetch da listagem que reseta a paginação para o início** (descarta a pilha de cursors e busca a primeira página, sem cursor) e **reenvia o termo de busca ativo**, se houver. Implementado por um único helper interno (ex.: `refetch()`) reutilizado por todas as ações de mutação, que sempre lê o `search` atual do estado e zera o cursor. `setSearch` segue o mesmo princípio (resetar paginação ao mudar o termo).
 
 ### Tela (`AdminsView.vue`) — layout aprovado
 
@@ -209,6 +212,7 @@ Stack: Vitest na `admin-api` (`vitest.config.ts` unit + `vitest.e2e.config.ts` c
 - [ ] Criar, editar, bloquear, desbloquear e deletar admins pela UI.
 - [ ] Criar/editar/deletar via modais; delete é só confirmação; block/unblock é ação direta com toast.
 - [ ] Sucessos e erros das ações exibem toast.
+- [ ] Toda mutação bem-sucedida (criar/editar/bloquear/desbloquear/deletar) recarrega a listagem resetando a paginação para o início e reenviando o termo de busca ativo.
 - [ ] API impede email duplicado em create e update; rejeita update/delete/block/unblock de admin inexistente (404).
 - [ ] Admins criados ficam sem senha, com `is_password_creation_pending = true` e `status = ACTIVE`.
 - [ ] Troca de email reseta a senha e marca `is_password_creation_pending = true`.
