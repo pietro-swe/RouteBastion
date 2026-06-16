@@ -2,22 +2,22 @@ import { AlreadyExistsException } from "@Shared/exceptions/already-exists.except
 import { NotFoundException } from "@Shared/exceptions/not-found.exception";
 import { Result } from "@Types/result";
 import { Injectable } from "@nestjs/common";
-import { CreateUserInput } from "./inputs/create";
-import { CreateUserOutput } from "./outputs/create";
-import { UsersRepository } from "./users.repository";
+import { AdminsRepository } from "./admins.repository";
+import { CreateAdminInput } from "./inputs/create";
+import { CreateAdminOutput } from "./outputs/create";
 
 @Injectable()
-export class UsersService {
-	constructor(private readonly repository: UsersRepository) {}
+export class AdminsService {
+	constructor(private readonly repository: AdminsRepository) {}
 
 	async create(
-		input: CreateUserInput,
-	): Promise<Result<AlreadyExistsException, CreateUserOutput>> {
+		input: CreateAdminInput,
+	): Promise<Result<AlreadyExistsException, CreateAdminOutput>> {
 		const exists = await this.repository.getByEmail(input.email);
 
 		if (exists) {
 			return [
-				new AlreadyExistsException("User with this email already exists"),
+				new AlreadyExistsException("Admin with this email already exists"),
 				null,
 			];
 		}
@@ -42,7 +42,7 @@ export class UsersService {
 		const exists = await this.repository.getByID(id);
 
 		if (!exists) {
-			return [new NotFoundException("User not found"), null];
+			return [new NotFoundException("Admin not found"), null];
 		}
 
 		await this.repository.delete(id);

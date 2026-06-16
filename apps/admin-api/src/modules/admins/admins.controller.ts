@@ -18,26 +18,26 @@ import {
 	ApiTags,
 } from "@nestjs/swagger";
 import { ZodResponse } from "nestjs-zod";
-import { CreateUserInput } from "./inputs/create";
-import { CreateUserOutput } from "./outputs/create";
-import { UsersService } from "./users.service";
+import { AdminsService } from "./admins.service";
+import { CreateAdminInput } from "./inputs/create";
+import { CreateAdminOutput } from "./outputs/create";
 
-@Controller("users")
-@ApiTags("users")
-export class UsersController {
-	constructor(private readonly service: UsersService) {}
+@Controller("admins")
+@ApiTags("admins")
+export class AdminsController {
+	constructor(private readonly service: AdminsService) {}
 
 	@Post()
 	@ZodResponse({
 		status: HttpStatus.CREATED,
-		type: CreateUserOutput,
-		description: "Successfully created a new user",
+		type: CreateAdminOutput,
+		description: "Successfully created a new admin",
 	})
 	@ApiConflictResponse({
 		type: ErrorOutput.Output,
-		description: "A user with the provided email already exists",
+		description: "An admin with the provided email already exists",
 	})
-	async create(@Body() input: CreateUserInput): Promise<CreateUserOutput> {
+	async create(@Body() input: CreateAdminInput): Promise<CreateAdminOutput> {
 		const [error, output] = await this.service.create(input);
 
 		if (error) {
@@ -46,7 +46,7 @@ export class UsersController {
 					error: error.message,
 				},
 				{
-					description: "A user with the provided email already exists",
+					description: "An admin with the provided email already exists",
 				},
 			);
 		}
@@ -57,11 +57,11 @@ export class UsersController {
 	@Delete(":id")
 	@HttpCode(HttpStatus.NO_CONTENT)
 	@ApiNoContentResponse({
-		description: "Successfully deleted the user",
+		description: "Successfully deleted the admin",
 	})
 	@ApiNotFoundResponse({
 		type: ErrorOutput.Output,
-		description: "No user found with the provided ID",
+		description: "No admin found with the provided ID",
 	})
 	async delete(@Param("id", ParseUUIDPipe) id: string): Promise<void> {
 		const [error] = await this.service.delete(id);

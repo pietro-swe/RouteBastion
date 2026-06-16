@@ -7,7 +7,7 @@ export function init(app: NestFastifyApplication) {
 		.setTitle("RouteBastion Admin API")
 		.setDescription("API documentation for RouteBastion Admin")
 		.setVersion("1.0")
-		.addTag("users")
+		.addTag("admins")
 		.addTag("api-keys")
 		.addTag("constraints")
 		.addTag("customers")

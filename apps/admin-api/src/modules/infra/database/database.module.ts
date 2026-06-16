@@ -1,16 +1,16 @@
-import { UsersRepository } from "@Modules/users/users.repository";
+import { AdminsRepository } from "@Modules/admins/admins.repository";
 import { Module } from "@nestjs/common";
 import { DrizzleService } from "./drizzle/drizzle.service";
-import { DrizzleUsersRepository } from "./drizzle/repositories/drizzle-users.repository";
+import { DrizzleAdminsRepository } from "./drizzle/repositories/drizzle-admins.repository";
 
 @Module({
 	providers: [
 		DrizzleService,
 		{
-			provide: UsersRepository,
-			useClass: DrizzleUsersRepository,
+			provide: AdminsRepository,
+			useClass: DrizzleAdminsRepository,
 		},
 	],
-	exports: [DrizzleService, UsersRepository],
+	exports: [DrizzleService, AdminsRepository],
 })
 export class DatabaseModule {}

@@ -1,10 +1,10 @@
-import { isNull } from "drizzle-orm";
+import { isNull, sql } from "drizzle-orm";
 import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 export const providers = pgTable(
 	"providers",
 	{
-		id: uuid("id").defaultRandom().primaryKey(),
+		id: uuid("id").default(sql`uuidv7()`).primaryKey(),
 		name: text("name").notNull(),
 
 		createdAt: timestamp("created_at").defaultNow().notNull(),

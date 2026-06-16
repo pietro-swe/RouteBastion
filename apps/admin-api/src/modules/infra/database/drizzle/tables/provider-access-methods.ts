@@ -3,10 +3,10 @@ import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { communicationMethodEnum } from "../enums/enums";
 import { providers } from "./providers";
 
-export const providersAccessMethods = pgTable(
-	"providers_access_methods",
+export const providerAccessMethods = pgTable(
+	"provider_access_methods",
 	{
-		id: uuid("id").defaultRandom().primaryKey(),
+		id: uuid("id").default(sql`uuidv7()`).primaryKey(),
 
 		providerId: uuid("provider_id")
 			.notNull()

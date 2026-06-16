@@ -8,4 +8,4 @@ const schema = z.object({
 	password: z.string().min(12),
 });
 
-export class CreateUserInput extends createZodDto(schema) {}
+export class CreateAdminInput extends createZodDto(schema) {}

@@ -13,7 +13,7 @@ import { customers } from "./customers";
 export const constraints = pgTable(
 	"constraints",
 	{
-		id: uuid("id").defaultRandom().primaryKey(),
+		id: uuid("id").default(sql`uuidv7()`).primaryKey(),
 
 		customerId: uuid("customer_id")
 			.notNull()

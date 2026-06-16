@@ -11,4 +11,4 @@ const schema = z.object({
 	deletedAt: z.iso.date().nullable(),
 });
 
-export class CreateUserOutput extends createZodDto(schema) {}
+export class CreateAdminOutput extends createZodDto(schema) {}

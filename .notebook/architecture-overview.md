@@ -11,7 +11,7 @@ Three apps (`apps/`):
 - **packages/contracts** — Zod schemas/types shared admin-ui ↔ admin-api. Planned, empty (created by admin-users-crud spec).
 
 Relationship:
-- admin-api + admin-ui = management plane (configure customers, providers, vehicles, constraints, users).
+- admin-api + admin-ui = management plane (configure customers, providers, vehicles, constraints, admins).
 - broker = runtime engine that solves VRP via external providers.
 - Both model the SAME Postgres domain — broker via sqlc (`sql/schema.sql`), admin-api via Drizzle tables. See [[domain-model]]
 

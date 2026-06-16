@@ -12,6 +12,6 @@ State (what's actually wired vs not):
 
 Tests: Vitest + @vue/test-utils + jsdom. Currently only `src/__tests__/App.spec.ts`.
 
-Planned: `/users` admin screen with cursor pagination, name search, create/edit/block/delete via modals — see `.specs/features/admin-users-crud/`. Will consume shared contracts from `apps/packages/contracts` (not yet created).
+Planned: `/admins` admin screen with cursor pagination, name search, create/edit/block/delete via modals — see `.specs/features/admin-users-crud/`. Will consume shared contracts from `apps/packages/contracts` (not yet created).
 
 Updated: 2026-06-15
