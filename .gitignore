@@ -1,5 +1,6 @@
 # Base
 node_modules
+.superpowers/
 dist
 build
 !apps/broker/build
