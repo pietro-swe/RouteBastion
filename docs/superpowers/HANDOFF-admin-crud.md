@@ -38,18 +38,17 @@ Via skill **`superpowers:subagent-driven-development`**: um subagente implementa
 | 11 | Drizzle repository impl | ✅ `55e7008` |
 | 12 | Controller + typecheck | ✅ `8a0b636` |
 | 13 | Infra e2e (Testcontainers `postgres:18`) | ✅ `df73fa4` |
-| 14 | Spec e2e de admins | ✅ `7114e07` — ⚠️ **NÃO-VERIFICADO** (sem Docker) |
+| 14 | Spec e2e de admins | ✅ `7114e07` — **VERIFICADO** (9/9 com Docker em 2026-06-16) |
 | — | Revisão final + `superpowers:finishing-a-development-branch` | ⬜ pendente |
 
-**Verificado ✅:** `@route-bastion/contracts` (16 testes + build), `admin-api` unit (16 testes: cursor + service), `admin-api` typecheck limpo.
-**NÃO verificado ⚠️:** suíte e2e — compila e o harness está certo, mas **não rodou** porque **Docker está indisponível neste ambiente**. Ao retomar, rode `pnpm --filter admin-api test:e2e` onde houver Docker (sobe `postgres:18`); a falha atual é só `Could not find a working container runtime strategy`.
+**Verificado ✅:** `@route-bastion/contracts` (16 testes + build), `admin-api` unit (16 testes: cursor + service), `admin-api` typecheck limpo, **`admin-api` e2e (9 testes, Testcontainers `postgres:18`, rodado em 2026-06-16)**.
 
 **Plan 2 (frontend): 11 tasks, todas pendentes.**
 
 ## Como retomar (Plan 1 já está code-complete)
 
-1. `git checkout feat/admin-crud` e `git log --oneline` (último commit = `7114e07`, Task 14).
-2. **Rodar o e2e onde houver Docker:** `pnpm --filter admin-api test:e2e` (sobe `postgres:18` via Testcontainers, aplica as migrações e exercita o CRUD completo). Esse é o único passo de verificação que faltou.
+1. `git checkout feat/admin-crud` e `git log --oneline`.
+2. ~~Rodar o e2e~~ — **feito** (9/9 em 2026-06-16). Para re-rodar: `pnpm --filter admin-api test:e2e` (precisa de Docker; sobe `postgres:18`).
 3. Revisão final + `superpowers:finishing-a-development-branch` (merge/PR).
 4. Depois, escrever/executar o **Plan 2** (frontend) — `docs/superpowers/plans/2026-06-15-admin-crud-frontend.md`.
 
@@ -57,7 +56,7 @@ Via skill **`superpowers:subagent-driven-development`**: um subagente implementa
 - `pnpm --filter @route-bastion/contracts test` e `... build` — ✅ passando
 - `pnpm --filter admin-api exec tsc --noEmit --incremental false -p tsconfig.json` — ✅ limpo (use `--incremental false`: a pasta `dist/` está com permissão de dono root e o buildinfo incremental falha ao escrever — não é erro de tipo)
 - `pnpm --filter admin-api test` (unit) — ✅ 16 testes
-- `pnpm --filter admin-api test:e2e` (**precisa de Docker** — Testcontainers sobe `postgres:18`) — ⚠️ ainda não rodado
+- `pnpm --filter admin-api test:e2e` (**precisa de Docker** — Testcontainers sobe `postgres:18`) — ✅ 9 testes (rodado 2026-06-16)
 
 ## Aprendizados/armadilhas já descobertos (importante para quem retomar)
 
