@@ -10,7 +10,8 @@
 		"ignoreUnknown": true,
 		"includes": [
 			"apps/admin-api/**/*",
-			"apps/admin-ui/**/*"
+			"apps/admin-ui/**/*",
+			"apps/packages/contracts/**/*"
 		]
 	},
 	"formatter": {

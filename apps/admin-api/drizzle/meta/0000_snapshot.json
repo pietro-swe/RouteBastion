@@ -1,9 +1,97 @@
 {
-  "id": "51c6deb7-1002-4e71-bb9b-ebb9012911ed",
+  "id": "db02b0b5-e88f-4ccc-b5d2-3b8a9040dcc3",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
+    "public.admins": {
+      "name": "admins",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuidv7()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "birth_date": {
+          "name": "birth_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "password_hash": {
+          "name": "password_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "admin_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'ACTIVE'"
+        },
+        "status_changed_at": {
+          "name": "status_changed_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "NULL"
+        },
+        "is_password_creation_pending": {
+          "name": "is_password_creation_pending",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "modified_at": {
+          "name": "modified_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "NULL"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "admins_email_unique": {
+          "name": "admins_email_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.api_keys": {
       "name": "api_keys",
       "schema": "",
@@ -13,7 +101,7 @@
           "type": "uuid",
           "primaryKey": true,
           "notNull": true,
-          "default": "gen_random_uuid()"
+          "default": "uuidv7()"
         },
         "customer_id": {
           "name": "customer_id",
@@ -126,7 +214,7 @@
           "type": "uuid",
           "primaryKey": true,
           "notNull": true,
-          "default": "gen_random_uuid()"
+          "default": "uuidv7()"
         },
         "customer_id": {
           "name": "customer_id",
@@ -253,7 +341,7 @@
           "type": "uuid",
           "primaryKey": true,
           "notNull": true,
-          "default": "gen_random_uuid()"
+          "default": "uuidv7()"
         },
         "name": {
           "name": "name",
@@ -263,12 +351,6 @@
         },
         "business_identifier": {
           "name": "business_identifier",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "contact_email": {
-          "name": "contact_email",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -311,8 +393,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.providers_access_methods": {
-      "name": "providers_access_methods",
+    "public.provider_access_methods": {
+      "name": "provider_access_methods",
       "schema": "",
       "columns": {
         "id": {
@@ -320,7 +402,7 @@
           "type": "uuid",
           "primaryKey": true,
           "notNull": true,
-          "default": "gen_random_uuid()"
+          "default": "uuidv7()"
         },
         "provider_id": {
           "name": "provider_id",
@@ -381,9 +463,9 @@
         }
       },
       "foreignKeys": {
-        "providers_access_methods_provider_id_providers_id_fk": {
-          "name": "providers_access_methods_provider_id_providers_id_fk",
-          "tableFrom": "providers_access_methods",
+        "provider_access_methods_provider_id_providers_id_fk": {
+          "name": "provider_access_methods_provider_id_providers_id_fk",
+          "tableFrom": "provider_access_methods",
           "tableTo": "providers",
           "columnsFrom": [
             "provider_id"
@@ -401,8 +483,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.providers_constraints": {
-      "name": "providers_constraints",
+    "public.provider_constraints": {
+      "name": "provider_constraints",
       "schema": "",
       "columns": {
         "id": {
@@ -410,7 +492,7 @@
           "type": "uuid",
           "primaryKey": true,
           "notNull": true,
-          "default": "gen_random_uuid()"
+          "default": "uuidv7()"
         },
         "provider_id": {
           "name": "provider_id",
@@ -423,13 +505,6 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true
-        },
-        "modified_at": {
-          "name": "modified_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "NULL"
         }
       },
       "indexes": {
@@ -450,9 +525,9 @@
         }
       },
       "foreignKeys": {
-        "providers_constraints_provider_id_providers_id_fk": {
-          "name": "providers_constraints_provider_id_providers_id_fk",
-          "tableFrom": "providers_constraints",
+        "provider_constraints_provider_id_providers_id_fk": {
+          "name": "provider_constraints_provider_id_providers_id_fk",
+          "tableFrom": "provider_constraints",
           "tableTo": "providers",
           "columnsFrom": [
             "provider_id"
@@ -470,8 +545,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.providers_features": {
-      "name": "providers_features",
+    "public.provider_features": {
+      "name": "provider_features",
       "schema": "",
       "columns": {
         "id": {
@@ -479,7 +554,7 @@
           "type": "uuid",
           "primaryKey": true,
           "notNull": true,
-          "default": "gen_random_uuid()"
+          "default": "uuidv7()"
         },
         "provider_id": {
           "name": "provider_id",
@@ -492,13 +567,6 @@
           "type": "boolean",
           "primaryKey": false,
           "notNull": true
-        },
-        "modified_at": {
-          "name": "modified_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "NULL"
         }
       },
       "indexes": {
@@ -519,9 +587,9 @@
         }
       },
       "foreignKeys": {
-        "providers_features_provider_id_providers_id_fk": {
-          "name": "providers_features_provider_id_providers_id_fk",
-          "tableFrom": "providers_features",
+        "provider_features_provider_id_providers_id_fk": {
+          "name": "provider_features_provider_id_providers_id_fk",
+          "tableFrom": "provider_features",
           "tableTo": "providers",
           "columnsFrom": [
             "provider_id"
@@ -548,7 +616,7 @@
           "type": "uuid",
           "primaryKey": true,
           "notNull": true,
-          "default": "gen_random_uuid()"
+          "default": "uuidv7()"
         },
         "name": {
           "name": "name",
@@ -601,79 +669,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.users": {
-      "name": "users",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "email": {
-          "name": "email",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "birth_date": {
-          "name": "birth_date",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "password_hash": {
-          "name": "password_hash",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "modified_at": {
-          "name": "modified_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "NULL"
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "NULL"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "users_email_unique": {
-          "name": "users_email_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.vehicles": {
       "name": "vehicles",
       "schema": "",
@@ -683,7 +678,7 @@
           "type": "uuid",
           "primaryKey": true,
           "notNull": true,
-          "default": "gen_random_uuid()"
+          "default": "uuidv7()"
         },
         "customer_id": {
           "name": "customer_id",
@@ -808,6 +803,14 @@
     }
   },
   "enums": {
+    "public.admin_status": {
+      "name": "admin_status",
+      "schema": "public",
+      "values": [
+        "ACTIVE",
+        "BLOCKED"
+      ]
+    },
     "public.cargo_kind": {
       "name": "cargo_kind",
       "schema": "public",

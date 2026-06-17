@@ -24,3 +24,5 @@ export const communicationMethodEnum = pgEnum("communication_method", [
 	"http",
 	"protocol_buffers",
 ]);
+
+export const adminStatusEnum = pgEnum("admin_status", ["ACTIVE", "BLOCKED"]);
