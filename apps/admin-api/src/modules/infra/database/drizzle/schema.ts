@@ -8,7 +8,7 @@ import { providerFeatures } from "./tables/provider-features";
 import { providers } from "./tables/providers";
 import { vehicles } from "./tables/vehicles";
 
-const schema = {
+export const schema = {
 	admins,
 	apiKeys,
 	constraints,
