@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { adminsService } from "./admins.service";
+import { AdminsService } from "./admins.service";
 
 function mockFetch(body: unknown, status = 200) {
 	return vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
@@ -19,11 +19,11 @@ afterEach(() => {
 	vi.restoreAllMocks();
 });
 
-describe("adminsService", () => {
+describe("AdminsService", () => {
 	it("list() builds the URL with cursor and search", async () => {
 		const fetchSpy = mockFetch({ items: [], nextCursor: null });
 
-		await adminsService.list({ cursor: "abc", search: "ana" });
+		await AdminsService.list({ cursor: "abc", search: "ana" });
 
 		const request = fetchSpy.mock.calls[0]![0] as Request;
 		expect(request.method).toBe("GET");
@@ -35,7 +35,7 @@ describe("adminsService", () => {
 	it("list() omits undefined params", async () => {
 		const fetchSpy = mockFetch({ items: [], nextCursor: null });
 
-		await adminsService.list({});
+		await AdminsService.list({});
 
 		const request = fetchSpy.mock.calls[0]![0] as Request;
 		expect(request.url).toBe("http://localhost:3000/api/admins");
@@ -45,7 +45,7 @@ describe("adminsService", () => {
 		const fetchSpy = mockFetch({ id: "1" }, 201);
 		const input = { name: "Ana", email: "ana@rb.io", birthDate: "1990-04-12" };
 
-		await adminsService.create(input);
+		await AdminsService.create(input);
 
 		const request = fetchSpy.mock.calls[0]![0] as Request;
 		expect(request.method).toBe("POST");
@@ -58,7 +58,7 @@ describe("adminsService", () => {
 	it("update() PUTs to /admins/:id", async () => {
 		const fetchSpy = mockFetch({ id: "1" });
 
-		await adminsService.update("1", {
+		await AdminsService.update("1", {
 			name: "Ana",
 			email: "ana@rb.io",
 			birthDate: "1990-04-12",
@@ -72,8 +72,8 @@ describe("adminsService", () => {
 	it("block()/unblock() PATCH the status routes", async () => {
 		const fetchSpy = mockFetch({ id: "1" });
 
-		await adminsService.block("1");
-		await adminsService.unblock("1");
+		await AdminsService.block("1");
+		await AdminsService.unblock("1");
 
 		const first = fetchSpy.mock.calls[0]![0] as Request;
 		const second = fetchSpy.mock.calls[1]![0] as Request;
@@ -87,7 +87,7 @@ describe("adminsService", () => {
 			new Response(null, { status: 200 }),
 		);
 
-		await adminsService.remove("1");
+		await AdminsService.remove("1");
 
 		const request = vi.mocked(globalThis.fetch).mock.calls[0]![0] as Request;
 		expect(request.method).toBe("DELETE");

@@ -4,11 +4,11 @@ import { createPinia, setActivePinia } from "pinia";
 import PrimeVue from "primevue/config";
 import ToastService from "primevue/toastservice";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { adminsService } from "@/modules/admins/services/admins.service";
+import { AdminsService } from "@/modules/admins/services/admins.service";
 import DeleteAdminDialog from "./DeleteAdminDialog.vue";
 
 vi.mock("@/modules/admins/services/admins.service", () => ({
-	adminsService: { remove: vi.fn(), list: vi.fn() },
+	AdminsService: { remove: vi.fn(), list: vi.fn() },
 }));
 
 const DialogStub = { props: ["visible"], template: `<div><slot /></div>` };
@@ -38,7 +38,7 @@ function mountDialog() {
 beforeEach(() => {
 	setActivePinia(createPinia());
 	vi.clearAllMocks();
-	vi.mocked(adminsService.list).mockResolvedValue({
+	vi.mocked(AdminsService.list).mockResolvedValue({
 		items: [],
 		nextCursor: null,
 	});
@@ -53,20 +53,20 @@ describe("DeleteAdminDialog", () => {
 	});
 
 	it("confirm calls store.remove and closes", async () => {
-		vi.mocked(adminsService.remove).mockResolvedValue();
+		vi.mocked(AdminsService.remove).mockResolvedValue();
 		const wrapper = mountDialog();
 
 		await wrapper.find('[data-testid="delete-confirm"]').trigger("click");
 		await flushPromises();
 
-		expect(adminsService.remove).toHaveBeenCalledWith("1");
+		expect(AdminsService.remove).toHaveBeenCalledWith("1");
 		expect(wrapper.emitted("update:visible")?.at(-1)).toEqual([false]);
 	});
 
 	it("cancel emits update:visible false without deleting", async () => {
 		const wrapper = mountDialog();
 		await wrapper.find('[data-testid="delete-cancel"]').trigger("click");
-		expect(adminsService.remove).not.toHaveBeenCalled();
+		expect(AdminsService.remove).not.toHaveBeenCalled();
 		expect(wrapper.emitted("update:visible")?.at(-1)).toEqual([false]);
 	});
 });

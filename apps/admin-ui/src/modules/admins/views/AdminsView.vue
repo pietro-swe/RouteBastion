@@ -3,6 +3,8 @@ import type { Admin } from "@route-bastion/contracts";
 import { useDebounceFn } from "@vueuse/core";
 import Avatar from "primevue/avatar";
 import Button from "primevue/button";
+import Column from "primevue/column";
+import DataTable from "primevue/datatable";
 import IconField from "primevue/iconfield";
 import InputIcon from "primevue/inputicon";
 import InputText from "primevue/inputtext";
@@ -110,77 +112,81 @@ async function toggleBlock(admin: Admin) {
 			/>
 		</IconField>
 
-		<div
-			class="grid grid-cols-[3fr_1.3fr_1.3fr_1.4fr] px-3 pb-2 text-xs font-bold uppercase text-surface-500"
+		<DataTable
+			:value="store.items"
+			:loading="store.loading"
+			data-testid="admin-table"
+			data-key="id"
 		>
-			<span>Admin</span>
-			<span>Status</span>
-			<span>Criado em</span>
-			<span></span>
-		</div>
+			<template #empty>
+				<p class="p-8 text-center text-surface-500" data-testid="empty">
+					Nenhum admin encontrado.
+				</p>
+			</template>
 
-		<p v-if="store.loading" data-testid="loading">Carregando…</p>
-
-		<p
-			v-else-if="store.items.length === 0"
-			class="rounded border border-surface-200 p-8 text-center text-surface-500"
-			data-testid="empty"
-		>
-			Nenhum admin encontrado.
-		</p>
-
-		<ul v-else class="flex flex-col gap-2">
-			<li
-				v-for="admin in store.items"
-				:key="admin.id"
-				class="grid grid-cols-[3fr_1.3fr_1.3fr_1.4fr] items-center rounded-lg border border-surface-200 p-3"
-				data-testid="admin-row"
-			>
-				<div class="flex items-center gap-3">
-					<Avatar :label="initials(admin.name)" shape="circle" />
-					<div>
-						<div class="font-semibold">{{ admin.name }}</div>
-						<div class="text-sm text-surface-500">{{ admin.email }}</div>
+			<Column header="Admin">
+				<template #body="{ data }">
+					<div class="flex items-center gap-3" data-testid="admin-row">
+						<Avatar :label="initials(data.name)" shape="circle" />
+						<div>
+							<div class="font-semibold">{{ data.name }}</div>
+							<div class="text-sm text-surface-500">
+								{{ data.email }}
+							</div>
+						</div>
 					</div>
-				</div>
-				<div>
+				</template>
+			</Column>
+
+			<Column header="Status">
+				<template #body="{ data }">
 					<Tag
-						:value="admin.status === 'ACTIVE' ? 'Ativo' : 'Bloqueado'"
-						:severity="admin.status === 'ACTIVE' ? 'success' : 'danger'"
+						:value="data.status === 'ACTIVE' ? 'Ativo' : 'Bloqueado'"
+						:severity="data.status === 'ACTIVE' ? 'success' : 'danger'"
 					/>
-				</div>
-				<div>{{ formatDateBR(admin.createdAt) }}</div>
-				<div class="flex justify-end gap-2">
-					<Button
-						icon="pi pi-pencil"
-						severity="secondary"
-						text
-						rounded
-						aria-label="Editar"
-						data-testid="edit"
-						@click="openEdit(admin)"
-					/>
-					<Button
-						:icon="admin.status === 'ACTIVE' ? 'pi pi-lock' : 'pi pi-lock-open'"
-						severity="secondary"
-						text
-						rounded
-						:aria-label="admin.status === 'ACTIVE' ? 'Bloquear' : 'Desbloquear'"
-						data-testid="toggle-block"
-						@click="toggleBlock(admin)"
-					/>
-					<Button
-						icon="pi pi-trash"
-						severity="danger"
-						text
-						rounded
-						aria-label="Deletar"
-						data-testid="delete"
-						@click="openDelete(admin)"
-					/>
-				</div>
-			</li>
-		</ul>
+				</template>
+			</Column>
+
+			<Column header="Criado em">
+				<template #body="{ data }">
+					{{ formatDateBR(data.createdAt) }}
+				</template>
+			</Column>
+
+			<Column header="">
+				<template #body="{ data }">
+					<div class="flex justify-end gap-2">
+						<Button
+							icon="pi pi-pencil"
+							severity="secondary"
+							text
+							rounded
+							aria-label="Editar"
+							data-testid="edit"
+							@click="openEdit(data)"
+						/>
+						<Button
+							:icon="data.status === 'ACTIVE' ? 'pi pi-lock' : 'pi pi-lock-open'"
+							severity="secondary"
+							text
+							rounded
+							:aria-label="data.status === 'ACTIVE' ? 'Bloquear' : 'Desbloquear'"
+							data-testid="toggle-block"
+							@click="toggleBlock(data)"
+						/>
+						<Button
+							icon="pi pi-trash"
+							severity="danger"
+							text
+							rounded
+							aria-label="Deletar"
+							data-testid="delete"
+							@click="openDelete(data)"
+						/>
+					</div>
+				</template>
+			</Column>
+		</DataTable>
 
 		<div class="mt-4 flex justify-end gap-2">
 			<Button

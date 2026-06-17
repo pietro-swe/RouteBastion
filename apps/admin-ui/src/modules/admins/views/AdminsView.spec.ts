@@ -4,11 +4,11 @@ import { createPinia, setActivePinia } from "pinia";
 import PrimeVue from "primevue/config";
 import ToastService from "primevue/toastservice";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { adminsService } from "@/modules/admins/services/admins.service";
+import { AdminsService } from "@/modules/admins/services/admins.service";
 import AdminsView from "./AdminsView.vue";
 
 vi.mock("@/modules/admins/services/admins.service", () => ({
-	adminsService: {
+	AdminsService: {
 		list: vi.fn(),
 		create: vi.fn(),
 		update: vi.fn(),
@@ -45,7 +45,7 @@ function mountView() {
 beforeEach(() => {
 	setActivePinia(createPinia());
 	vi.clearAllMocks();
-	vi.mocked(adminsService.list).mockResolvedValue({
+	vi.mocked(AdminsService.list).mockResolvedValue({
 		items: [
 			makeAdmin(),
 			makeAdmin({
@@ -71,7 +71,7 @@ describe("AdminsView", () => {
 	});
 
 	it("shows the empty state when there are no admins", async () => {
-		vi.mocked(adminsService.list).mockResolvedValue({
+		vi.mocked(AdminsService.list).mockResolvedValue({
 			items: [],
 			nextCursor: null,
 		});
@@ -83,8 +83,8 @@ describe("AdminsView", () => {
 	it("Próxima loads the next page with the current nextCursor", async () => {
 		const wrapper = mountView();
 		await flushPromises();
-		vi.mocked(adminsService.list).mockClear();
-		vi.mocked(adminsService.list).mockResolvedValue({
+		vi.mocked(AdminsService.list).mockClear();
+		vi.mocked(AdminsService.list).mockResolvedValue({
 			items: [makeAdmin({ id: "3" })],
 			nextCursor: null,
 		});
@@ -92,9 +92,9 @@ describe("AdminsView", () => {
 		await wrapper.find('[data-testid="next"]').trigger("click");
 		await flushPromises();
 
-		expect(adminsService.list).toHaveBeenCalledWith({
+		expect(AdminsService.list).toHaveBeenCalledWith({
 			cursor: "c1",
-			search: undefined,
+			search: "",
 		});
 	});
 
@@ -102,21 +102,21 @@ describe("AdminsView", () => {
 		vi.useFakeTimers();
 		const wrapper = mountView();
 		await vi.runAllTimersAsync();
-		vi.mocked(adminsService.list).mockClear();
+		vi.mocked(AdminsService.list).mockClear();
 
 		const input = wrapper.find('[data-testid="search"]');
 		await input.setValue("ana");
 		await input.trigger("input");
 		await vi.advanceTimersByTimeAsync(300);
 
-		expect(adminsService.list).toHaveBeenLastCalledWith({
+		expect(AdminsService.list).toHaveBeenLastCalledWith({
 			cursor: undefined,
 			search: "ana",
 		});
 	});
 
 	it("blocking an active admin calls the block endpoint then refetches", async () => {
-		vi.mocked(adminsService.block).mockResolvedValue(
+		vi.mocked(AdminsService.block).mockResolvedValue(
 			makeAdmin({ status: "BLOCKED" }),
 		);
 		const wrapper = mountView();
@@ -125,6 +125,6 @@ describe("AdminsView", () => {
 		await wrapper.findAll('[data-testid="toggle-block"]')[0]!.trigger("click");
 		await flushPromises();
 
-		expect(adminsService.block).toHaveBeenCalledWith("1");
+		expect(AdminsService.block).toHaveBeenCalledWith("1");
 	});
 });

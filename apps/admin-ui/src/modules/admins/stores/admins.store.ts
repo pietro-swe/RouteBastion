@@ -5,7 +5,7 @@ import type {
 } from "@route-bastion/contracts";
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
-import { adminsService } from "@/modules/admins/services/admins.service";
+import { AdminsService } from "@/modules/admins/services/admins.service";
 
 export const useAdminsStore = defineStore("Admins", () => {
 	const items = ref<Admin[]>([]);
@@ -24,9 +24,9 @@ export const useAdminsStore = defineStore("Admins", () => {
 		error.value = null;
 
 		try {
-			const result = await adminsService.list({
+			const result = await AdminsService.list({
 				cursor,
-				search: search.value || undefined,
+				search: search.value ?? undefined,
 			});
 			items.value = result.items;
 			nextCursor.value = result.nextCursor;
@@ -72,27 +72,27 @@ export const useAdminsStore = defineStore("Admins", () => {
 	}
 
 	async function create(input: CreateAdminInput) {
-		await adminsService.create(input);
+		await AdminsService.create(input);
 		await refetch();
 	}
 
 	async function update(id: string, input: UpdateAdminInput) {
-		await adminsService.update(id, input);
+		await AdminsService.update(id, input);
 		await refetch();
 	}
 
 	async function block(id: string) {
-		await adminsService.block(id);
+		await AdminsService.block(id);
 		await refetch();
 	}
 
 	async function unblock(id: string) {
-		await adminsService.unblock(id);
+		await AdminsService.unblock(id);
 		await refetch();
 	}
 
 	async function remove(id: string) {
-		await adminsService.remove(id);
+		await AdminsService.remove(id);
 		await refetch();
 	}
 

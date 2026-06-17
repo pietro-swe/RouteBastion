@@ -1,11 +1,11 @@
 import type { Admin } from "@route-bastion/contracts";
 import { createPinia, setActivePinia } from "pinia";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { adminsService } from "@/modules/admins/services/admins.service";
+import { AdminsService } from "@/modules/admins/services/admins.service";
 import { useAdminsStore } from "./admins.store";
 
 vi.mock("@/modules/admins/services/admins.service", () => ({
-	adminsService: {
+	AdminsService: {
 		list: vi.fn(),
 		create: vi.fn(),
 		update: vi.fn(),
@@ -37,7 +37,7 @@ beforeEach(() => {
 
 describe("useAdminsStore", () => {
 	it("fetchFirstPage loads items and nextCursor", async () => {
-		vi.mocked(adminsService.list).mockResolvedValue({
+		vi.mocked(AdminsService.list).mockResolvedValue({
 			items: [makeAdmin()],
 			nextCursor: "c1",
 		});
@@ -48,14 +48,14 @@ describe("useAdminsStore", () => {
 		expect(store.items).toHaveLength(1);
 		expect(store.hasNext).toBe(true);
 		expect(store.hasPrev).toBe(false);
-		expect(adminsService.list).toHaveBeenCalledWith({
+		expect(AdminsService.list).toHaveBeenCalledWith({
 			cursor: undefined,
-			search: undefined,
+			search: "",
 		});
 	});
 
 	it("fetchNext pushes the cursor; fetchPrev pops it", async () => {
-		vi.mocked(adminsService.list)
+		vi.mocked(AdminsService.list)
 			.mockResolvedValueOnce({ items: [makeAdmin()], nextCursor: "c1" })
 			.mockResolvedValueOnce({
 				items: [makeAdmin({ id: "2" })],
@@ -67,22 +67,22 @@ describe("useAdminsStore", () => {
 		await store.fetchFirstPage();
 		await store.fetchNext();
 
-		expect(adminsService.list).toHaveBeenLastCalledWith({
+		expect(AdminsService.list).toHaveBeenLastCalledWith({
 			cursor: "c1",
-			search: undefined,
+			search: "",
 		});
 		expect(store.hasPrev).toBe(true);
 
 		await store.fetchPrev();
-		expect(adminsService.list).toHaveBeenLastCalledWith({
+		expect(AdminsService.list).toHaveBeenLastCalledWith({
 			cursor: undefined,
-			search: undefined,
+			search: "",
 		});
 		expect(store.hasPrev).toBe(false);
 	});
 
 	it("setSearch trims the term and refetches from the first page", async () => {
-		vi.mocked(adminsService.list).mockResolvedValue({
+		vi.mocked(AdminsService.list).mockResolvedValue({
 			items: [],
 			nextCursor: null,
 		});
@@ -91,21 +91,21 @@ describe("useAdminsStore", () => {
 		await store.setSearch("  ana  ");
 
 		expect(store.search).toBe("ana");
-		expect(adminsService.list).toHaveBeenLastCalledWith({
+		expect(AdminsService.list).toHaveBeenLastCalledWith({
 			cursor: undefined,
 			search: "ana",
 		});
 	});
 
 	it("resets pagination to the first page and keeps search after a mutation", async () => {
-		vi.mocked(adminsService.list)
+		vi.mocked(AdminsService.list)
 			.mockResolvedValueOnce({ items: [makeAdmin()], nextCursor: "c1" })
 			.mockResolvedValueOnce({
 				items: [makeAdmin({ id: "2" })],
 				nextCursor: "c2",
 			})
 			.mockResolvedValueOnce({ items: [makeAdmin()], nextCursor: null });
-		vi.mocked(adminsService.create).mockResolvedValue(makeAdmin());
+		vi.mocked(AdminsService.create).mockResolvedValue(makeAdmin());
 
 		const store = useAdminsStore();
 		await store.setSearch("ana");
@@ -118,8 +118,8 @@ describe("useAdminsStore", () => {
 			birthDate: "1990-04-12",
 		});
 
-		expect(adminsService.create).toHaveBeenCalled();
-		expect(adminsService.list).toHaveBeenLastCalledWith({
+		expect(AdminsService.create).toHaveBeenCalled();
+		expect(AdminsService.list).toHaveBeenLastCalledWith({
 			cursor: undefined,
 			search: "ana",
 		});
@@ -127,24 +127,24 @@ describe("useAdminsStore", () => {
 	});
 
 	it("block/unblock/update/remove each refetch from the first page", async () => {
-		vi.mocked(adminsService.list).mockResolvedValue({
+		vi.mocked(AdminsService.list).mockResolvedValue({
 			items: [makeAdmin()],
 			nextCursor: null,
 		});
-		vi.mocked(adminsService.block).mockResolvedValue(makeAdmin());
-		vi.mocked(adminsService.remove).mockResolvedValue();
+		vi.mocked(AdminsService.block).mockResolvedValue(makeAdmin());
+		vi.mocked(AdminsService.remove).mockResolvedValue();
 
 		const store = useAdminsStore();
 		await store.block("1");
 		await store.remove("1");
 
-		expect(adminsService.block).toHaveBeenCalledWith("1");
-		expect(adminsService.remove).toHaveBeenCalledWith("1");
-		expect(adminsService.list).toHaveBeenCalledTimes(2);
+		expect(AdminsService.block).toHaveBeenCalledWith("1");
+		expect(AdminsService.remove).toHaveBeenCalledWith("1");
+		expect(AdminsService.list).toHaveBeenCalledTimes(2);
 	});
 
 	it("sets an error message when loading fails", async () => {
-		vi.mocked(adminsService.list).mockRejectedValue(new Error("boom"));
+		vi.mocked(AdminsService.list).mockRejectedValue(new Error("boom"));
 
 		const store = useAdminsStore();
 		await store.fetchFirstPage();
