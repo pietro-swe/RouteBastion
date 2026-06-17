@@ -26,7 +26,11 @@ function makeAdmin(overrides: Partial<Admin> = {}): Admin {
 	};
 }
 
-function mountDialog(props: Record<string, unknown>) {
+function mountDialog(props: {
+	visible: boolean;
+	mode: "create" | "edit";
+	admin: Admin | null;
+}) {
 	return mount(AdminFormDialog, {
 		props,
 		global: {

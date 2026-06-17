@@ -5,7 +5,8 @@ function mockFetch(body: unknown, status = 200) {
 	return vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
 		const req = input as Request;
 		if (req.body) {
-			(req as Record<string, unknown>)._capturedBody = await req.json();
+			(req as unknown as Record<string, unknown>)._capturedBody =
+				await req.json();
 		}
 		return new Response(JSON.stringify(body), {
 			status,
@@ -49,7 +50,9 @@ describe("adminsService", () => {
 		const request = fetchSpy.mock.calls[0]![0] as Request;
 		expect(request.method).toBe("POST");
 		expect(request.url).toBe("http://localhost:3000/api/admins");
-		expect((request as Record<string, unknown>)._capturedBody).toEqual(input);
+		expect(
+			(request as unknown as Record<string, unknown>)._capturedBody,
+		).toEqual(input);
 	});
 
 	it("update() PUTs to /admins/:id", async () => {
