@@ -1,11 +1,4 @@
+import { createAdminInputSchema } from "@route-bastion/contracts";
 import { createZodDto } from "nestjs-zod";
-import z from "zod";
 
-const schema = z.object({
-	name: z.string().min(1),
-	email: z.email(),
-	birthDate: z.iso.date(),
-	password: z.string().min(12),
-});
-
-export class CreateAdminInput extends createZodDto(schema) {}
+export class CreateAdminInput extends createZodDto(createAdminInputSchema) {}
