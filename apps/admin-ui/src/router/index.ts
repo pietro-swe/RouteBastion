@@ -6,6 +6,7 @@ export const routes = {
 	ForgotPassword: "/forgot-password",
 	Dashboard: "/dashboard",
 	Admins: "/dashboard/admins",
+	Customers: "/dashboard/customers",
 } as const;
 
 const router = createRouter({
@@ -19,6 +20,12 @@ const router = createRouter({
 					path: "admins",
 					name: "Admins",
 					component: () => import("@/modules/admins/views/AdminsView.vue"),
+				},
+				{
+					path: "customers",
+					name: "Customers",
+					component: () =>
+						import("@/modules/customers/views/CustomersView.vue"),
 				},
 			],
 		},
