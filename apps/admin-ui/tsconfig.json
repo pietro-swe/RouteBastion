@@ -2,15 +2,9 @@
 	"files": [],
 	"compilerOptions": {
 		"paths": {
-			"@Types/*": [
-				"./src/@types/*"
-			],
-			"@Shared/*": [
-				"./src/shared/*"
-			],
-			"@Modules/*": [
-				"./src/modules/*"
-			],
+			"@/*": [
+				"./src/*"
+			]
 		}
 	},
 	"references": [
