@@ -13,10 +13,10 @@ export function formatDateBR(value: string): string {
 }
 
 export function parseApiDate(value: string): Date {
-	const [year, month, day] = value
+	const parts = value
 		.slice(0, 10)
 		.split("-")
 		.map((part) => Number(part));
 
-	return new Date(year, month - 1, day);
+	return new Date(parts[0]!, parts[1]! - 1, parts[2]!);
 }

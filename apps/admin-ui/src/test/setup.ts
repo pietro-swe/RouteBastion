@@ -14,7 +14,7 @@ if (!window.matchMedia) {
 }
 
 if (!("ResizeObserver" in window)) {
-	window.ResizeObserver = class {
+	(window as Record<string, unknown>).ResizeObserver = class {
 		observe() {}
 		unobserve() {}
 		disconnect() {}
