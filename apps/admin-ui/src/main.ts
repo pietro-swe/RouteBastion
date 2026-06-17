@@ -1,6 +1,7 @@
 import Aura from "@primeuix/themes/aura";
 import { createPinia } from "pinia";
 import PrimeVue, { type PrimeVueConfiguration } from "primevue/config";
+import ToastService from "primevue/toastservice";
 import { createApp } from "vue";
 
 import App from "./App.vue";
@@ -19,5 +20,6 @@ app.use(PrimeVue, {
 	ripple: true,
 	inputVariant: "filled",
 } as PrimeVueConfiguration);
+app.use(ToastService);
 
 app.mount("#app");
