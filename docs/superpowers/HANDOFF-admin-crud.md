@@ -21,7 +21,7 @@ Via skill **`superpowers:subagent-driven-development`**: um subagente implementa
 
 **Decisão do usuário:** executar **somente o Plan 1 agora**; o **Plan 2 (frontend) fica para depois** ("amanhã").
 
-> ⚠️ **Atenção sobre o approach:** os subagentes de **review em background morreram ao bater o limite de sessão (5h)** — as Tasks 1 e 2 foram revisadas com sucesso, mas os agentes de review ficam frágeis perto do limite. A Task 3 (migração) foi **recuperada e verificada diretamente pelo orquestrador** (inspeção do SQL gerado + diffs), sem respawnar agentes. **Recomendação ao retomar:** para as Tasks 4–14, considere **execução inline direta** (os planos já têm o código completo) ou subagentes implementadores com **review inline** — é mais confiável que depender de agentes de review em background.
+> ⚠️ **Nota sobre o approach:** começamos com `subagent-driven-development`, mas os subagentes de **review em background morreram ao bater o limite de sessão (5h)**. As Tasks 1–2 foram revisadas por subagentes; a Task 3 em diante foi **executada e verificada inline pelo orquestrador** (typecheck + testes + inspeção de diffs a cada commit) — mais confiável perto do limite. **Plan 1 está code-complete (14/14).**
 
 ## Progresso do Plan 1 (14 tasks)
 
@@ -29,38 +29,35 @@ Via skill **`superpowers:subagent-driven-development`**: um subagente implementa
 
 | Task | Descrição | Status |
 |---|---|---|
-| 1 | Scaffold `@route-bastion/contracts` | ✅ commit `73811a9` |
-| 2 | Schemas zod + tipos (TDD) | ✅ commits `1d27963` + `89dfa56` (hardening de testes) |
-| 3 | Schema `admins` (status, is_password_creation_pending, password nullable, **drop deleted_at**) + wire Drizzle + **migração baseline regenerada** | ✅ commit `71d77b0` |
-| 4 | Wire contracts + domain types + DTOs (deleta `outputs/create.ts`) | ⬜ **PRÓXIMA** |
-| 5 | Repository abstract class + cursor codec (TDD) | ⬜ pendente |
-| 6 | Service `create` (TDD) | ⬜ pendente |
-| 7 | Service `list` (cursor) (TDD) | ⬜ pendente |
-| 8 | Service `update` (reset de senha na troca de email) (TDD) | ⬜ pendente |
-| 9 | Service `block`/`unblock` (TDD) | ⬜ pendente |
-| 10 | Service `delete` físico (TDD) | ⬜ pendente |
-| 11 | Drizzle repository impl (list/update/delete/setStatus) | ⬜ pendente |
-| 12 | Controller (POST/GET/PUT/PATCH block\|unblock/DELETE) + typecheck | ⬜ pendente |
-| 13 | Infra e2e (Testcontainers `postgres:18`) | ⬜ pendente |
-| 14 | Spec e2e de admins | ⬜ pendente |
+| 1 | Scaffold `@route-bastion/contracts` | ✅ `73811a9` |
+| 2 | Schemas zod + tipos (TDD) | ✅ `1d27963` + `89dfa56` |
+| 3 | Schema `admins` + wire Drizzle + **migração baseline regenerada** | ✅ `71d77b0` |
+| 4 | Wire contracts + domain types + DTOs | ✅ `52dc8ac` |
+| 5 | Repository abstract class + cursor codec (TDD) | ✅ `bf2624a` |
+| 6–10 | Service `create`/`list`/`update`/`block`/`unblock`/`delete` (TDD, consolidado) | ✅ `7138b00` |
+| 11 | Drizzle repository impl | ✅ `55e7008` |
+| 12 | Controller + typecheck | ✅ `8a0b636` |
+| 13 | Infra e2e (Testcontainers `postgres:18`) | ✅ `df73fa4` |
+| 14 | Spec e2e de admins | ✅ `7114e07` — ⚠️ **NÃO-VERIFICADO** (sem Docker) |
 | — | Revisão final + `superpowers:finishing-a-development-branch` | ⬜ pendente |
 
-**Plan 2 (frontend): 11 tasks, todas pendentes.** Recomendado escrever/executar só depois do Plan 1.
+**Verificado ✅:** `@route-bastion/contracts` (16 testes + build), `admin-api` unit (16 testes: cursor + service), `admin-api` typecheck limpo.
+**NÃO verificado ⚠️:** suíte e2e — compila e o harness está certo, mas **não rodou** porque **Docker está indisponível neste ambiente**. Ao retomar, rode `pnpm --filter admin-api test:e2e` onde houver Docker (sobe `postgres:18`); a falha atual é só `Could not find a working container runtime strategy`.
 
-> ℹ️ Após a Task 3 o projeto **ainda não compila** (`tsc`): `@types/index.ts`, `admins.service.ts`, `admins.controller.ts`, `outputs/create.ts` e `drizzle-admins.repository.ts` ainda referenciam o shape antigo do `Admin`. Isso é **esperado** — fica verde a partir da Task 4 em diante (Tasks 4, 11, 12). Não "conserte" isoladamente; siga o plano.
+**Plan 2 (frontend): 11 tasks, todas pendentes.**
 
-## Como retomar
+## Como retomar (Plan 1 já está code-complete)
 
-1. `git checkout feat/admin-crud` e `git log --oneline` (último commit do Plan 1 = `71d77b0`, Task 3).
-2. Próxima é a **Task 4** do Plan 1 (`docs/superpowers/plans/2026-06-15-admin-crud-backend.md`). Seguir task a task (cada task = test → implementação → rodar → commit), inline ou via subagentes (ver aviso sobre approach acima).
-3. Ao terminar o Plan 1: revisão final + `superpowers:finishing-a-development-branch`.
-4. Depois, escrever/executar o **Plan 2** (frontend).
+1. `git checkout feat/admin-crud` e `git log --oneline` (último commit = `7114e07`, Task 14).
+2. **Rodar o e2e onde houver Docker:** `pnpm --filter admin-api test:e2e` (sobe `postgres:18` via Testcontainers, aplica as migrações e exercita o CRUD completo). Esse é o único passo de verificação que faltou.
+3. Revisão final + `superpowers:finishing-a-development-branch` (merge/PR).
+4. Depois, escrever/executar o **Plan 2** (frontend) — `docs/superpowers/plans/2026-06-15-admin-crud-frontend.md`.
 
 ### Comandos de verificação (Definition of Done do Plan 1)
-- `pnpm --filter @route-bastion/contracts test` e `... build`
-- `pnpm --filter admin-api exec tsc --noEmit -p tsconfig.json` (só fica limpo após Tasks 4/11/12)
-- `pnpm --filter admin-api test` (unit)
-- `pnpm --filter admin-api test:e2e` (**precisa de Docker rodando** — Testcontainers sobe `postgres:18`)
+- `pnpm --filter @route-bastion/contracts test` e `... build` — ✅ passando
+- `pnpm --filter admin-api exec tsc --noEmit --incremental false -p tsconfig.json` — ✅ limpo (use `--incremental false`: a pasta `dist/` está com permissão de dono root e o buildinfo incremental falha ao escrever — não é erro de tipo)
+- `pnpm --filter admin-api test` (unit) — ✅ 16 testes
+- `pnpm --filter admin-api test:e2e` (**precisa de Docker** — Testcontainers sobe `postgres:18`) — ⚠️ ainda não rodado
 
 ## Aprendizados/armadilhas já descobertos (importante para quem retomar)
 
