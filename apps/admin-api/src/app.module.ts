@@ -1,4 +1,5 @@
 import { AdminsModule } from "@Modules/admins/admins.module";
+import { CustomersModule } from "@Modules/customers/customers.module";
 import { DatabaseModule } from "@Modules/infra/database/database.module";
 import { ZodExceptionFilter } from "@Modules/infra/http/filters/zod-exception.filter";
 import { Module } from "@nestjs/common";
@@ -16,6 +17,7 @@ import env from "./modules/config/env";
 		}),
 		DatabaseModule,
 		AdminsModule,
+		CustomersModule,
 	],
 	providers: [
 		{

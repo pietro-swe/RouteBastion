@@ -1,0 +1,2 @@
+ALTER TABLE "customers" DROP CONSTRAINT "customers_business_identifier_unique";--> statement-breakpoint
+CREATE UNIQUE INDEX "customers_business_identifier_unique" ON "customers" USING btree ("business_identifier") WHERE "customers"."deleted_at" IS NULL;

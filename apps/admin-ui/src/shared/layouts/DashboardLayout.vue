@@ -17,6 +17,12 @@ import { routes } from "@/router";
 				>
 					Admins
 				</RouterLink>
+				<RouterLink
+					:to="routes.Customers"
+					class="rounded px-3 py-2 hover:bg-surface-100"
+				>
+					Customers
+				</RouterLink>
 			</nav>
 		</aside>
 		<main class="flex-1 p-6">
